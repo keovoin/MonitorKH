@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cambodia Monitor - Real-time News & Updates</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+</head>
+<body>
+  <header class="header">
+    <div class="header-content">
+      <h1>🇰🇭 Cambodia Monitor</h1>
+      <div class="live-indicator">
+        <span class="pulse"></span>
+        <span>LIVE</span>
+      </div>
+      <div class="time" id="time"></div>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <!-- Map Section -->
+    <section class="map-section">
+      <div class="section-header">
+        <h2>Cambodia Map</h2>
+        <div class="map-controls">
+          <button class="btn-small" onclick="map.setView([12.5, 105], 7)">Reset View</button>
+        </div>
+      </div>
+      <div id="map" class="map-container"></div>
+    </section>
+
+    <!-- News Grid -->
+    <div class="news-grid">
+      <!-- Local News -->
+      <section class="news-panel">
+        <div class="section-header">
+          <h2>🇰🇭 Cambodia News</h2>
+          <span class="badge" id="local-count">0</span>
+        </div>
+        <div id="local-news" class="news-list loading">
+          <div class="spinner"></div>
+        </div>
+      </section>
+
+      <!-- Regional News -->
+      <section class="news-panel">
+        <div class="section-header">
+          <h2>🌏 ASEAN & Regional</h2>
+          <span class="badge" id="regional-count">0</span>
+        </div>
+        <div id="regional-news" class="news-list loading">
+          <div class="spinner"></div>
+        </div>
+      </section>
+
+      <!-- Border & Security -->
+      <section class="news-panel">
+        <div class="section-header">
+          <h2>🛡️ Border & Security</h2>
+          <span class="badge" id="security-count">0</span>
+        </div>
+        <div id="security-news" class="news-list loading">
+          <div class="spinner"></div>
+        </div>
+      </section>
+
+      <!-- Weather & Environment -->
+      <section class="news-panel">
+        <div class="section-header">
+          <h2>🌦️ Weather & Environment</h2>
+          <span class="badge" id="weather-count">0</span>
+        </div>
+        <div id="weather-news" class="news-list">
+          <div class="weather-widget">
+            <div id="phnom-penh-weather">Loading weather...</div>
+            <div id="siem-reap-weather">Loading weather...</div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <p>Data updated every 5 minutes | Sources: Khmer Times, Phnom Penh Post, VOA Cambodia, Regional Media</p>
+  </footer>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
