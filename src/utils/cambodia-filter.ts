@@ -4,9 +4,7 @@
  */
 
 import {
-  CAMBODIA_KEYWORDS,
   MONITORED_COUNTRIES,
-  CAMBODIA_REGION_BOUNDS,
   RELEVANT_ASIAN_COUNTRIES,
   isCambodiaRelevant,
   isInCambodiaRegion,
@@ -224,7 +222,7 @@ export function extractCountryMentions(text: string): string[] {
  */
 export function shouldIncludeFeedItem(item: NewsItem): boolean {
   // Must be relevant to Cambodia
-  if (!isCambodiaRelevant(item.title, item.description)) {
+  if (!isCambodiaRelevant(item.title, item.description || '')) {
     return false;
   }
   
