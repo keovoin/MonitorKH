@@ -3,88 +3,272 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Cambodia Monitor - Real-time News & Updates</title>
+  <title>Cambodia Monitor - Real-Time Intelligence Dashboard</title>
+  <meta name="description" content="Real-time Cambodia intelligence dashboard: live news, weather, map monitoring, economic data for Phnom Penh, Siem Reap, Sihanoukville and more.">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🇰🇭</text></svg>">
   <link rel="stylesheet" href="styles.css">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
 <body>
-  <header class="header">
-    <div class="header-content">
-      <h1>🇰🇭 Cambodia Monitor</h1>
-      <div class="live-indicator">
-        <span class="pulse"></span>
-        <span>LIVE</span>
+  <!-- Top Bar -->
+  <header class="top-bar">
+    <div class="top-bar-left">
+      <div class="logo">
+        <span class="logo-flag">🇰🇭</span>
+        <span class="logo-text">CAMBODIA</span>
+        <span class="logo-sub">MONITOR</span>
+        <span class="version">v1.0</span>
       </div>
-      <div class="time" id="time"></div>
+      <div class="status-pills">
+        <span class="pill pill-live"><span class="pulse-dot"></span> LIVE</span>
+        <span class="pill pill-viewers" id="viewer-count">0 online</span>
+      </div>
+    </div>
+    <div class="top-bar-center">
+      <div class="top-clock" id="top-clock">SAT, 25 APR 2026 17:45:00 ICT</div>
+    </div>
+    <div class="top-bar-right">
+      <div class="search-box">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        <input type="text" placeholder="Search news..." id="search-input">
+      </div>
+      <div class="theme-toggle" id="theme-toggle" title="Toggle theme">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      </div>
     </div>
   </header>
 
-  <main class="main-content">
+  <!-- Main Layout -->
+  <div class="main-layout">
     <!-- Map Section -->
-    <section class="map-section">
-      <div class="section-header">
-        <h2>Cambodia Map</h2>
-        <div class="map-controls">
-          <button class="btn-small" onclick="map.setView([12.5, 105], 7)">Reset View</button>
+    <div class="map-area">
+      <!-- Map Controls Overlay -->
+      <div class="map-overlay-top">
+        <div class="situation-label">CAMBODIA SITUATION</div>
+        <div class="time-range-selector">
+          <button class="time-btn active" data-range="1h">1h</button>
+          <button class="time-btn" data-range="6h">6h</button>
+          <button class="time-btn" data-range="24h">24h</button>
+          <button class="time-btn" data-range="7d">7d</button>
+          <button class="time-btn" data-range="all">All</button>
         </div>
       </div>
+
+      <!-- Layer Panel -->
+      <div class="layer-panel" id="layer-panel">
+        <div class="layer-header">
+          <span>LAYERS</span>
+          <span class="layer-count" id="layer-count">5</span>
+          <button class="layer-collapse" id="layer-toggle">&#9660;</button>
+        </div>
+        <div class="layer-list" id="layer-list">
+          <label class="layer-item"><input type="checkbox" checked data-layer="cities"><span class="layer-dot" style="background:#ef4444"></span> Key Cities</label>
+          <label class="layer-item"><input type="checkbox" checked data-layer="provinces"><span class="layer-dot" style="background:#f59e0b"></span> Provinces</label>
+          <label class="layer-item"><input type="checkbox" checked data-layer="borders"><span class="layer-dot" style="background:#8b5cf6"></span> Border Crossings</label>
+          <label class="layer-item"><input type="checkbox" checked data-layer="economic"><span class="layer-dot" style="background:#10b981"></span> Economic Zones</label>
+          <label class="layer-item"><input type="checkbox" checked data-layer="infrastructure"><span class="layer-dot" style="background:#3b82f6"></span> Infrastructure</label>
+          <label class="layer-item"><input type="checkbox" data-layer="tourism"><span class="layer-dot" style="background:#ec4899"></span> Tourism Sites</label>
+          <label class="layer-item"><input type="checkbox" data-layer="waterways"><span class="layer-dot" style="background:#06b6d4"></span> Waterways</label>
+        </div>
+      </div>
+
+      <!-- Legend -->
+      <div class="map-legend">
+        <span>LEGEND</span>
+        <span class="legend-item"><span class="legend-dot" style="background:#ef4444"></span> Capital</span>
+        <span class="legend-item"><span class="legend-dot" style="background:#f59e0b"></span> Major City</span>
+        <span class="legend-item"><span class="legend-dot" style="background:#10b981"></span> Port/SEZ</span>
+        <span class="legend-item"><span class="legend-dot" style="background:#8b5cf6"></span> Border</span>
+        <span class="legend-item"><span class="legend-dot" style="background:#3b82f6"></span> Airport</span>
+      </div>
+
       <div id="map" class="map-container"></div>
-    </section>
+    </div>
 
-    <!-- News Grid -->
-    <div class="news-grid">
-      <!-- Local News -->
-      <section class="news-panel">
-        <div class="section-header">
-          <h2>🇰🇭 Cambodia News</h2>
-          <span class="badge" id="local-count">0</span>
-        </div>
-        <div id="local-news" class="news-list loading">
-          <div class="spinner"></div>
-        </div>
-      </section>
-
-      <!-- Regional News -->
-      <section class="news-panel">
-        <div class="section-header">
-          <h2>🌏 ASEAN & Regional</h2>
-          <span class="badge" id="regional-count">0</span>
-        </div>
-        <div id="regional-news" class="news-list loading">
-          <div class="spinner"></div>
-        </div>
-      </section>
-
-      <!-- Border & Security -->
-      <section class="news-panel">
-        <div class="section-header">
-          <h2>🛡️ Border & Security</h2>
-          <span class="badge" id="security-count">0</span>
-        </div>
-        <div id="security-news" class="news-list loading">
-          <div class="spinner"></div>
-        </div>
-      </section>
-
-      <!-- Weather & Environment -->
-      <section class="news-panel">
-        <div class="section-header">
-          <h2>🌦️ Weather & Environment</h2>
-          <span class="badge" id="weather-count">0</span>
-        </div>
-        <div id="weather-news" class="news-list">
-          <div class="weather-widget">
-            <div id="phnom-penh-weather">Loading weather...</div>
-            <div id="siem-reap-weather">Loading weather...</div>
+    <!-- Bottom Panels -->
+    <div class="bottom-panels">
+      <!-- Live News Panel -->
+      <div class="panel panel-news">
+        <div class="panel-header">
+          <div class="panel-title">
+            <span>LIVE NEWS</span>
+            <span class="item-count" id="news-total">0</span>
+          </div>
+          <div class="panel-actions">
+            <button class="panel-btn" id="news-refresh" title="Refresh">&#8635;</button>
+            <button class="panel-btn" id="news-expand" title="Expand">&#9634;</button>
           </div>
         </div>
-      </section>
-    </div>
-  </main>
+        <div class="news-tabs" id="news-tabs">
+          <button class="tab active" data-feed="all">ALL</button>
+          <button class="tab" data-feed="khmer-times">KHMER TIMES</button>
+          <button class="tab" data-feed="pp-post">PP POST</button>
+          <button class="tab" data-feed="voa">VOA</button>
+          <button class="tab" data-feed="cambodianess">CAMBODIANESS</button>
+          <button class="tab" data-feed="asean">ASEAN</button>
+        </div>
+        <div class="news-feed" id="news-feed">
+          <div class="loading-state"><div class="spinner"></div><span>Loading feeds...</span></div>
+        </div>
+      </div>
 
-  <footer class="footer">
-    <p>Data updated every 5 minutes | Sources: Khmer Times, Phnom Penh Post, VOA Cambodia, Regional Media</p>
+      <!-- Weather & Environment Panel -->
+      <div class="panel panel-weather">
+        <div class="panel-header">
+          <div class="panel-title">
+            <span>WEATHER & ENVIRONMENT</span>
+          </div>
+          <div class="panel-actions">
+            <button class="panel-btn" id="weather-refresh" title="Refresh">&#8635;</button>
+          </div>
+        </div>
+        <div class="weather-grid" id="weather-grid">
+          <div class="loading-state"><div class="spinner"></div><span>Loading weather...</span></div>
+        </div>
+      </div>
+
+      <!-- Cambodia Insights Panel -->
+      <div class="panel panel-insights">
+        <div class="panel-header">
+          <div class="panel-title">
+            <span>CAMBODIA INSIGHTS</span>
+          </div>
+        </div>
+        <div class="insights-content" id="insights-content">
+          <!-- Key Stats -->
+          <div class="stat-grid">
+            <div class="stat-card">
+              <div class="stat-label">Capital</div>
+              <div class="stat-value">Phnom Penh</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">Prime Minister</div>
+              <div class="stat-value">Hun Manet</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">Population</div>
+              <div class="stat-value">17.2M</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">Currency</div>
+              <div class="stat-value">KHR / USD</div>
+            </div>
+          </div>
+
+          <!-- Exchange Rate -->
+          <div class="insight-section">
+            <div class="insight-header">Exchange Rates</div>
+            <div class="exchange-rates" id="exchange-rates">
+              <div class="rate-row">
+                <span class="rate-pair">USD/KHR</span>
+                <span class="rate-value" id="usd-khr">4,100</span>
+                <span class="rate-change neutral">--</span>
+              </div>
+              <div class="rate-row">
+                <span class="rate-pair">THB/KHR</span>
+                <span class="rate-value" id="thb-khr">115</span>
+                <span class="rate-change neutral">--</span>
+              </div>
+              <div class="rate-row">
+                <span class="rate-pair">CNY/KHR</span>
+                <span class="rate-value" id="cny-khr">565</span>
+                <span class="rate-change neutral">--</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Key Sectors -->
+          <div class="insight-section">
+            <div class="insight-header">Key Sectors Monitor</div>
+            <div class="sector-list">
+              <div class="sector-row">
+                <span class="sector-icon">&#127981;</span>
+                <span class="sector-name">Tourism</span>
+                <span class="sector-status status-good">Active</span>
+              </div>
+              <div class="sector-row">
+                <span class="sector-icon">&#127983;</span>
+                <span class="sector-name">Construction</span>
+                <span class="sector-status status-good">Growing</span>
+              </div>
+              <div class="sector-row">
+                <span class="sector-icon">&#128188;</span>
+                <span class="sector-name">Garment Export</span>
+                <span class="sector-status status-good">Stable</span>
+              </div>
+              <div class="sector-row">
+                <span class="sector-icon">&#127806;</span>
+                <span class="sector-name">Agriculture</span>
+                <span class="sector-status status-warn">Seasonal</span>
+              </div>
+              <div class="sector-row">
+                <span class="sector-icon">&#128640;</span>
+                <span class="sector-name">Tech & Digital</span>
+                <span class="sector-status status-good">Expanding</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Border Status -->
+          <div class="insight-section">
+            <div class="insight-header">Border Status</div>
+            <div class="border-list">
+              <div class="border-row">
+                <span class="border-flag">&#127481;&#127469;</span>
+                <span class="border-name">Cambodia-Thailand</span>
+                <span class="border-status status-good">Open</span>
+              </div>
+              <div class="border-row">
+                <span class="border-flag">&#127483;&#127475;</span>
+                <span class="border-name">Cambodia-Vietnam</span>
+                <span class="border-status status-good">Open</span>
+              </div>
+              <div class="border-row">
+                <span class="border-flag">&#127473;&#127462;</span>
+                <span class="border-name">Cambodia-Laos</span>
+                <span class="border-status status-good">Open</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="footer-bar">
+    <div class="footer-left">
+      <span class="footer-brand">CAMBODIA MONITOR</span>
+      <span class="footer-version">v1.0</span>
+    </div>
+    <div class="footer-links">
+      <a href="https://github.com/keovoin/MonitorKH" target="_blank">GitHub</a>
+      <a href="#" id="about-link">About</a>
+    </div>
+    <div class="footer-right">&copy; 2026 Cambodia Monitor</div>
   </footer>
+
+  <!-- About Modal -->
+  <div class="modal-overlay" id="about-modal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3>About Cambodia Monitor</h3>
+        <button class="modal-close" id="modal-close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p>Cambodia Monitor is a free, real-time intelligence dashboard focused exclusively on Cambodia. It aggregates news from multiple Cambodian and regional sources, provides weather data, and monitors key locations across the country.</p>
+        <br>
+        <p><strong>Data Sources:</strong> Khmer Times, Phnom Penh Post, VOA Cambodia, Cambodianess, Open-Meteo Weather API, OpenStreetMap</p>
+        <br>
+        <p><strong>Focus Areas:</strong> Cambodia, Phnom Penh, Siem Reap, Sihanoukville, Hun Manet, ASEAN, Mekong Region</p>
+        <br>
+        <p>Built with Leaflet.js, Open-Meteo API, and curated RSS feeds. No API keys required.</p>
+      </div>
+    </div>
+  </div>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="app.js"></script>
