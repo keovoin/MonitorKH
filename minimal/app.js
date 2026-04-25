@@ -279,6 +279,8 @@
             snippet: stripHtml(item.description || '').slice(0, 120),
           });
         });
+      } else {
+        throw new Error('rss2json returned non-ok status: ' + (data.status || 'unknown'));
       }
     } catch (e1) {
       // Fallback: try allorigins
