@@ -18,30 +18,70 @@
       name: 'Khmer Times',
       url: 'https://www.khmertimeskh.com/feed/',
       color: 'source-khmer-times',
+      local: true,
     },
     {
       id: 'pp-post',
       name: 'Phnom Penh Post',
       url: 'https://www.phnompenhpost.com/rss',
       color: 'source-pp-post',
+      local: true,
     },
     {
       id: 'voa',
       name: 'VOA Cambodia',
       url: 'https://www.voacambodia.com/api/zq_eoqe$oii',
       color: 'source-voa',
+      local: true,
     },
     {
       id: 'cambodianess',
       name: 'Cambodianess',
       url: 'https://cambodianess.com/feed',
       color: 'source-cambodianess',
+      local: true,
     },
     {
       id: 'asean',
       name: 'ASEAN Affairs',
       url: 'https://aseanaffairs.com/feed/',
       color: 'source-asean',
+      local: false,
+    },
+    {
+      id: 'reuters',
+      name: 'Reuters',
+      url: 'https://www.reutersagency.com/feed/',
+      color: 'source-reuters',
+      local: false,
+    },
+    {
+      id: 'aljazeera',
+      name: 'Al Jazeera',
+      url: 'https://www.aljazeera.com/xml/rss/all.xml',
+      color: 'source-aljazeera',
+      local: false,
+    },
+    {
+      id: 'bbc',
+      name: 'BBC News',
+      url: 'https://feeds.bbci.co.uk/news/world/asia/rss.xml',
+      color: 'source-bbc',
+      local: false,
+    },
+    {
+      id: 'ap',
+      name: 'AP News',
+      url: 'https://rsshub.app/apnews/topics/world-news',
+      color: 'source-ap',
+      local: false,
+    },
+    {
+      id: 'nikkei',
+      name: 'Nikkei Asia',
+      url: 'https://asia.nikkei.com/rss',
+      color: 'source-nikkei',
+      local: false,
     },
   ];
 
@@ -346,9 +386,8 @@
   }
 
   function isRelevant(item) {
-    // For direct Cambodia sources, always relevant
-    if (['khmer-times', 'pp-post', 'voa', 'cambodianess'].includes(item.sourceId)) return true;
-    // For ASEAN/regional, check keywords
+    const src = FEED_SOURCES.find(s => s.id === item.sourceId);
+    if (src && src.local) return true;
     const text = (item.title + ' ' + item.snippet).toLowerCase();
     return CAMBODIA_KEYWORDS.some(kw => text.includes(kw));
   }
@@ -572,12 +611,17 @@
         const khr = data.rates.KHR || 4100;
         const thb = data.rates.THB || 34;
         const cny = data.rates.CNY || 7.25;
+        const eur = data.rates.EUR || 0.92;
+        const jpy = data.rates.JPY || 155;
 
         document.getElementById('usd-khr').textContent = Math.round(khr).toLocaleString();
         document.getElementById('thb-khr').textContent = Math.round(khr / thb).toLocaleString();
         document.getElementById('cny-khr').textContent = Math.round(khr / cny).toLocaleString();
+        var eurEl = document.getElementById('eur-khr');
+        if (eurEl) eurEl.textContent = Math.round(khr / eur).toLocaleString();
+        var jpyEl = document.getElementById('jpy-khr');
+        if (jpyEl) jpyEl.textContent = Math.round(khr / jpy).toLocaleString();
 
-        // Update change indicators
         document.querySelectorAll('.rate-change').forEach(el => {
           el.classList.remove('neutral');
           el.classList.add('neutral');
@@ -590,15 +634,135 @@
   }
 
   // ========================
+  // ECONOMIC INDICATORS (World Bank free API)
+  // ========================
+  async function loadEconomicData() {
+    var ecoGrid = document.getElementById('eco-indicators');
+    if (!ecoGrid) return;
+
+    var indicators = [
+      { id: 'NY.GDP.MKTP.CD', name: 'GDP', format: 'B', unit: 'USD' },
+      { id: 'NY.GDP.PCAP.CD', name: 'GDP per Capita', format: 'K', unit: 'USD' },
+      { id: 'FP.CPI.TOTL.ZG', name: 'Inflation', format: '%', unit: '' },
+      { id: 'NE.EXP.GNFS.CD', name: 'Exports', format: 'B', unit: 'USD' },
+      { id: 'BX.KLT.DINV.CD.WD', name: 'FDI Inflow', format: 'B', unit: 'USD' },
+      { id: 'SL.UEM.TOTL.ZS', name: 'Unemployment', format: '%', unit: '' },
+    ];
+
+    var results = await Promise.allSettled(
+      indicators.map(ind =>
+        fetch('https://api.worldbank.org/v2/country/KHM/indicator/' + ind.id + '?format=json&per_page=5&date=2019:2024')
+          .then(r => r.json())
+      )
+    );
+
+    ecoGrid.innerHTML = '';
+    results.forEach((result, i) => {
+      var ind = indicators[i];
+      var value = '--';
+      var year = '';
+      var trend = 'neutral';
+
+      if (result.status === 'fulfilled' && result.value && result.value[1]) {
+        var entries = result.value[1].filter(e => e.value !== null);
+        if (entries.length > 0) {
+          var latest = entries[0];
+          year = latest.date;
+          var raw = latest.value;
+          if (ind.format === 'B') {
+            value = (raw / 1e9).toFixed(1) + 'B';
+          } else if (ind.format === 'K') {
+            value = Math.round(raw).toLocaleString();
+          } else if (ind.format === '%') {
+            value = raw.toFixed(1) + '%';
+          }
+          if (entries.length > 1 && entries[1].value !== null) {
+            trend = raw > entries[1].value ? 'up' : raw < entries[1].value ? 'down' : 'neutral';
+          }
+        }
+      }
+
+      var card = document.createElement('div');
+      card.className = 'eco-card';
+      card.innerHTML =
+        '<div class="eco-label">' + escapeHtml(ind.name) + (year ? ' (' + year + ')' : '') + '</div>' +
+        '<div class="eco-value">' + (ind.unit ? '<span class="eco-unit">' + ind.unit + ' </span>' : '') + value + '</div>' +
+        '<div class="eco-trend trend-' + trend + '">' + (trend === 'up' ? '&#9650;' : trend === 'down' ? '&#9660;' : '&#8212;') + '</div>';
+      ecoGrid.appendChild(card);
+    });
+  }
+
+  // ========================
+  // COUNTRY STATISTICS
+  // ========================
+  async function loadCountryStats() {
+    var statsGrid = document.getElementById('country-stats');
+    if (!statsGrid) return;
+
+    var statIndicators = [
+      { id: 'SP.POP.TOTL', name: 'Population', format: 'M' },
+      { id: 'SP.POP.GROW', name: 'Pop. Growth', format: '%' },
+      { id: 'SP.DYN.LE00.IN', name: 'Life Expectancy', format: 'yr' },
+      { id: 'SE.ADT.LITR.ZS', name: 'Literacy Rate', format: '%' },
+      { id: 'SP.URB.TOTL.IN.ZS', name: 'Urbanization', format: '%' },
+      { id: 'IT.NET.USER.ZS', name: 'Internet Users', format: '%' },
+      { id: 'SH.XPD.CHEX.GD.ZS', name: 'Health Spending (% GDP)', format: '%' },
+      { id: 'SE.XPD.TOTL.GD.ZS', name: 'Education Spending (% GDP)', format: '%' },
+    ];
+
+    var results = await Promise.allSettled(
+      statIndicators.map(ind =>
+        fetch('https://api.worldbank.org/v2/country/KHM/indicator/' + ind.id + '?format=json&per_page=5&date=2019:2024')
+          .then(r => r.json())
+      )
+    );
+
+    statsGrid.innerHTML = '';
+    results.forEach((result, i) => {
+      var ind = statIndicators[i];
+      var value = '--';
+      var year = '';
+
+      if (result.status === 'fulfilled' && result.value && result.value[1]) {
+        var entries = result.value[1].filter(e => e.value !== null);
+        if (entries.length > 0) {
+          var latest = entries[0];
+          year = latest.date;
+          var raw = latest.value;
+          if (ind.format === 'M') {
+            value = (raw / 1e6).toFixed(1) + 'M';
+          } else if (ind.format === '%') {
+            value = raw.toFixed(1) + '%';
+          } else if (ind.format === 'yr') {
+            value = raw.toFixed(1) + ' yrs';
+          }
+        }
+      }
+
+      var row = document.createElement('div');
+      row.className = 'cstat-row';
+      row.innerHTML =
+        '<span class="cstat-name">' + escapeHtml(ind.name) + '</span>' +
+        '<span class="cstat-value">' + value + '</span>' +
+        (year ? '<span class="cstat-year">' + year + '</span>' : '');
+      statsGrid.appendChild(row);
+    });
+  }
+
+  // ========================
   // INITIALIZE
   // ========================
   loadAllNews();
   loadWeather();
   loadExchangeRates();
+  loadEconomicData();
+  loadCountryStats();
 
   // Auto-refresh
   setInterval(loadAllNews, 5 * 60 * 1000); // 5 minutes
   setInterval(loadWeather, 15 * 60 * 1000); // 15 minutes
   setInterval(loadExchangeRates, 30 * 60 * 1000); // 30 minutes
+  setInterval(loadEconomicData, 60 * 60 * 1000); // 1 hour
+  setInterval(loadCountryStats, 60 * 60 * 1000); // 1 hour
 
 })();

@@ -20,7 +20,7 @@
         <span class="logo-flag">🇰🇭</span>
         <span class="logo-text">CAMBODIA</span>
         <span class="logo-sub">MONITOR</span>
-        <span class="version">v1.0</span>
+        <span class="version">v2.0</span>
       </div>
       <div class="status-pills">
         <span class="pill pill-live"><span class="pulse-dot"></span> LIVE</span>
@@ -109,6 +109,12 @@
           <button class="tab" data-feed="voa">VOA</button>
           <button class="tab" data-feed="cambodianess">CAMBODIANESS</button>
           <button class="tab" data-feed="asean">ASEAN</button>
+          <span class="tab-divider">|</span>
+          <button class="tab tab-intl" data-feed="reuters">REUTERS</button>
+          <button class="tab tab-intl" data-feed="aljazeera">AL JAZEERA</button>
+          <button class="tab tab-intl" data-feed="bbc">BBC</button>
+          <button class="tab tab-intl" data-feed="ap">AP</button>
+          <button class="tab tab-intl" data-feed="nikkei">NIKKEI</button>
         </div>
         <div class="news-feed" id="news-feed">
           <div class="loading-state"><div class="spinner"></div><span>Loading feeds...</span></div>
@@ -130,7 +136,7 @@
         </div>
       </div>
 
-      <!-- Cambodia Insights Panel -->
+      <!-- Cambodia Insights + Economy Panel -->
       <div class="panel panel-insights">
         <div class="panel-header">
           <div class="panel-title">
@@ -177,6 +183,32 @@
                 <span class="rate-value" id="cny-khr">565</span>
                 <span class="rate-change neutral">--</span>
               </div>
+              <div class="rate-row">
+                <span class="rate-pair">EUR/KHR</span>
+                <span class="rate-value" id="eur-khr">4,450</span>
+                <span class="rate-change neutral">--</span>
+              </div>
+              <div class="rate-row">
+                <span class="rate-pair">JPY/KHR</span>
+                <span class="rate-value" id="jpy-khr">26</span>
+                <span class="rate-change neutral">--</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Economic Indicators (World Bank data) -->
+          <div class="insight-section">
+            <div class="insight-header">Economic Indicators <span class="data-source">World Bank</span></div>
+            <div class="eco-grid" id="eco-indicators">
+              <div class="loading-state" style="padding:16px"><div class="spinner"></div><span>Loading data...</span></div>
+            </div>
+          </div>
+
+          <!-- Country Statistics -->
+          <div class="insight-section">
+            <div class="insight-header">Country Statistics <span class="data-source">World Bank</span></div>
+            <div class="cstat-grid" id="country-stats">
+              <div class="loading-state" style="padding:16px"><div class="spinner"></div><span>Loading data...</span></div>
             </div>
           </div>
 
@@ -209,6 +241,21 @@
                 <span class="sector-name">Tech & Digital</span>
                 <span class="sector-status status-good">Expanding</span>
               </div>
+              <div class="sector-row">
+                <span class="sector-icon">&#127968;</span>
+                <span class="sector-name">Real Estate</span>
+                <span class="sector-status status-warn">Cooling</span>
+              </div>
+              <div class="sector-row">
+                <span class="sector-icon">&#9981;</span>
+                <span class="sector-name">Mining & Energy</span>
+                <span class="sector-status status-good">Developing</span>
+              </div>
+              <div class="sector-row">
+                <span class="sector-icon">&#128176;</span>
+                <span class="sector-name">Banking & Finance</span>
+                <span class="sector-status status-good">Stable</span>
+              </div>
             </div>
           </div>
 
@@ -233,6 +280,38 @@
               </div>
             </div>
           </div>
+
+          <!-- Devin Recommendations -->
+          <div class="insight-section">
+            <div class="insight-header">Recommended Enhancements</div>
+            <div class="recommend-list">
+              <div class="recommend-row">
+                <span class="recommend-icon">&#128200;</span>
+                <span class="recommend-text">GDP trend chart with historical data</span>
+                <span class="recommend-badge badge-planned">Planned</span>
+              </div>
+              <div class="recommend-row">
+                <span class="recommend-icon">&#128225;</span>
+                <span class="recommend-text">Social media sentiment tracking</span>
+                <span class="recommend-badge badge-idea">Idea</span>
+              </div>
+              <div class="recommend-row">
+                <span class="recommend-icon">&#128276;</span>
+                <span class="recommend-text">Breaking news push alerts</span>
+                <span class="recommend-badge badge-idea">Idea</span>
+              </div>
+              <div class="recommend-row">
+                <span class="recommend-icon">&#127758;</span>
+                <span class="recommend-text">Trade partner analytics</span>
+                <span class="recommend-badge badge-planned">Planned</span>
+              </div>
+              <div class="recommend-row">
+                <span class="recommend-icon">&#128202;</span>
+                <span class="recommend-text">Tourism arrival statistics</span>
+                <span class="recommend-badge badge-idea">Idea</span>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -242,7 +321,7 @@
   <footer class="footer-bar">
     <div class="footer-left">
       <span class="footer-brand">CAMBODIA MONITOR</span>
-      <span class="footer-version">v1.0</span>
+      <span class="footer-version">v2.0</span>
     </div>
     <div class="footer-links">
       <a href="https://github.com/keovoin/MonitorKH" target="_blank">GitHub</a>
@@ -259,13 +338,18 @@
         <button class="modal-close" id="modal-close">&times;</button>
       </div>
       <div class="modal-body">
-        <p>Cambodia Monitor is a free, real-time intelligence dashboard focused exclusively on Cambodia. It aggregates news from multiple Cambodian and regional sources, provides weather data, and monitors key locations across the country.</p>
+        <p>Cambodia Monitor v2.0 is a free, real-time intelligence dashboard focused exclusively on Cambodia. It aggregates news from local and international sources, provides live weather and economic data, and monitors key locations.</p>
         <br>
-        <p><strong>Data Sources:</strong> Khmer Times, Phnom Penh Post, VOA Cambodia, Cambodianess, Open-Meteo Weather API, OpenStreetMap</p>
+        <p><strong>Local Sources:</strong> Khmer Times, Phnom Penh Post, VOA Cambodia, Cambodianess</p>
+        <p><strong>International Sources:</strong> Reuters, Al Jazeera, BBC, AP News, Nikkei Asia (filtered for Cambodia mentions)</p>
+        <br>
+        <p><strong>Economic Data:</strong> World Bank API (GDP, inflation, FDI, trade, demographics)</p>
+        <p><strong>Weather:</strong> Open-Meteo API (4 cities, real-time)</p>
+        <p><strong>Exchange Rates:</strong> open.er-api.com (USD, THB, CNY, EUR, JPY to KHR)</p>
         <br>
         <p><strong>Focus Areas:</strong> Cambodia, Phnom Penh, Siem Reap, Sihanoukville, Hun Manet, ASEAN, Mekong Region</p>
         <br>
-        <p>Built with Leaflet.js, Open-Meteo API, and curated RSS feeds. No API keys required.</p>
+        <p>All APIs are free and require no keys. Built with Leaflet.js and curated RSS feeds.</p>
       </div>
     </div>
   </div>
