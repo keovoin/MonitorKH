@@ -238,7 +238,7 @@
       hour12: false,
       timeZone: 'Asia/Phnom_Penh',
     };
-    const formatted = now.toLocaleDateString('en-US', options).toUpperCase().replace(',', '') + ' ICT';
+    const formatted = now.toLocaleString('en-US', options).toUpperCase().replace(/,/g, '') + ' ICT';
     document.getElementById('top-clock').textContent = formatted;
   }
   updateClock();
@@ -302,6 +302,10 @@
     const tmp = document.createElement('div');
     tmp.innerHTML = html;
     return (tmp.textContent || tmp.innerText || '').trim();
+  }
+
+  function escapeHtml(str) {
+    return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
   }
 
   function parseRSSXml(xmlStr, source) {
@@ -375,9 +379,9 @@
       div.innerHTML =
         '<div class="news-time-col">' + timeAgo(item.pubDate) + '</div>' +
         '<div class="news-body">' +
-          '<span class="news-source-tag ' + item.sourceColor + '">' + item.source + '</span>' +
-          '<div class="news-headline">' + item.title + '</div>' +
-          (item.snippet ? '<div class="news-snippet">' + item.snippet + '</div>' : '') +
+          '<span class="news-source-tag ' + escapeHtml(item.sourceColor) + '">' + escapeHtml(item.source) + '</span>' +
+          '<div class="news-headline">' + escapeHtml(item.title) + '</div>' +
+          (item.snippet ? '<div class="news-snippet">' + escapeHtml(item.snippet) + '</div>' : '') +
         '</div>';
       container.appendChild(div);
     });
@@ -479,7 +483,7 @@
       const lons = WEATHER_CITIES.map(c => c.lon).join(',');
 
       // Fetch each city individually (Open-Meteo doesn't support batch for current weather)
-      const results = await Promise.all(
+      const results = await Promise.allSettled(
         WEATHER_CITIES.map(city =>
           fetch(
             'https://api.open-meteo.com/v1/forecast?latitude=' + city.lat +
@@ -491,8 +495,13 @@
       );
 
       container.innerHTML = '';
-      results.forEach((data, i) => {
+      results.forEach((result, i) => {
         const city = WEATHER_CITIES[i];
+        if (result.status !== 'fulfilled') {
+          console.warn('Weather fetch failed for ' + city.name);
+          return;
+        }
+        const data = result.value;
         const current = data.current || {};
         const temp = Math.round(current.temperature_2m || 0);
         const humidity = current.relative_humidity_2m || 0;
@@ -512,6 +521,10 @@
           '</div>';
         container.appendChild(card);
       });
+      if (container.children.length === 0) {
+        container.innerHTML =
+          '<div class="weather-card"><div class="weather-city">Weather unavailable</div></div>';
+      }
     } catch (e) {
       console.error('Weather load error:', e);
       container.innerHTML =
