@@ -486,7 +486,23 @@ html, body {
 .source-voa { background: rgba(16, 185, 129, 0.15); color: var(--green); }
 .source-cambodianess { background: rgba(245, 158, 11, 0.15); color: var(--yellow); }
 .source-asean { background: rgba(236, 72, 153, 0.15); color: var(--pink); }
+.source-reuters { background: rgba(255, 140, 0, 0.15); color: #ff8c00; }
+.source-aljazeera { background: rgba(210, 160, 60, 0.15); color: #d4a030; }
+.source-bbc { background: rgba(180, 30, 30, 0.15); color: #e04040; }
+.source-ap { background: rgba(220, 50, 50, 0.15); color: #dc3232; }
+.source-nikkei { background: rgba(0, 150, 200, 0.15); color: #0096c8; }
 .source-default { background: rgba(148, 163, 184, 0.15); color: var(--text-secondary); }
+
+/* Tab divider for intl sources */
+.tab-divider {
+  color: var(--border-hover);
+  display: flex;
+  align-items: center;
+  padding: 0 4px;
+  font-size: 10px;
+  user-select: none;
+}
+.tab-intl { font-style: italic; }
 
 .news-headline {
   font-size: 12px;
@@ -689,6 +705,122 @@ html, body {
   padding: 1px 8px;
   border-radius: 3px;
 }
+
+/* Data source badge */
+.data-source {
+  font-size: 8px;
+  font-weight: 500;
+  color: var(--text-muted);
+  background: rgba(148, 163, 184, 0.1);
+  padding: 1px 5px;
+  border-radius: 3px;
+  margin-left: 6px;
+  letter-spacing: 0.3px;
+  text-transform: none;
+}
+
+/* Economic Indicators Grid */
+.eco-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+  padding: 6px 8px;
+}
+
+.eco-card {
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 6px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.eco-label {
+  font-size: 9px;
+  color: var(--text-muted);
+  font-weight: 500;
+  letter-spacing: 0.3px;
+}
+
+.eco-value {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.eco-unit {
+  font-size: 9px;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+.eco-trend {
+  font-size: 10px;
+  font-weight: 600;
+}
+.eco-trend.trend-up { color: var(--green); }
+.eco-trend.trend-down { color: var(--red); }
+.eco-trend.trend-neutral { color: var(--text-muted); }
+
+/* Country Statistics */
+.cstat-grid {
+  padding: 6px 10px;
+}
+
+.cstat-row {
+  display: flex;
+  align-items: center;
+  padding: 3px 0;
+  gap: 8px;
+}
+
+.cstat-name {
+  font-size: 11px;
+  color: var(--text-secondary);
+  flex: 1;
+}
+
+.cstat-value {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+  min-width: 60px;
+  text-align: right;
+}
+
+.cstat-year {
+  font-size: 9px;
+  color: var(--text-muted);
+  min-width: 30px;
+  text-align: right;
+}
+
+/* Recommendations */
+.recommend-list { padding: 6px 10px; }
+
+.recommend-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 0;
+}
+
+.recommend-icon { font-size: 14px; }
+.recommend-text { font-size: 11px; color: var(--text-secondary); flex: 1; }
+
+.recommend-badge {
+  font-size: 9px;
+  font-weight: 600;
+  padding: 1px 6px;
+  border-radius: 3px;
+  letter-spacing: 0.3px;
+}
+.badge-planned { background: rgba(59, 130, 246, 0.15); color: var(--accent); }
+.badge-idea { background: rgba(139, 92, 246, 0.15); color: var(--purple); }
 
 /* ===== FOOTER ===== */
 .footer-bar {
