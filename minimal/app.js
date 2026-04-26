@@ -181,17 +181,95 @@
     waterway: { color: '#06b6d4', radius: 5, fillOpacity: 0.6, size: 0.25 },
   };
 
-  // Trade route arcs from Phnom Penh to major partners
-  var TRADE_ARCS = [
-    { from: { lat: 11.55, lng: 104.92 }, to: { lat: 39.90, lng: 116.40 }, color: ['#ef4444', '#f59e0b'], label: 'China' },
-    { from: { lat: 11.55, lng: 104.92 }, to: { lat: 38.90, lng: -77.03 }, color: ['#3b82f6', '#06b6d4'], label: 'USA' },
-    { from: { lat: 11.55, lng: 104.92 }, to: { lat: 13.75, lng: 100.50 }, color: ['#10b981', '#f59e0b'], label: 'Thailand' },
-    { from: { lat: 11.55, lng: 104.92 }, to: { lat: 21.02, lng: 105.85 }, color: ['#8b5cf6', '#ec4899'], label: 'Vietnam' },
-    { from: { lat: 11.55, lng: 104.92 }, to: { lat: 35.68, lng: 139.69 }, color: ['#f97316', '#ef4444'], label: 'Japan' },
-    { from: { lat: 11.55, lng: 104.92 }, to: { lat: 37.55, lng: 126.97 }, color: ['#06b6d4', '#3b82f6'], label: 'S. Korea' },
-    { from: { lat: 11.55, lng: 104.92 }, to: { lat: 50.85, lng: 4.35 }, color: ['#8b5cf6', '#3b82f6'], label: 'EU' },
-    { from: { lat: 11.55, lng: 104.92 }, to: { lat: 1.35, lng: 103.82 }, color: ['#10b981', '#06b6d4'], label: 'Singapore' },
+  // =========================================================
+  // GLOBE ARC DATA: Flights, Shipping, Submarine Cables
+  // =========================================================
+  var PP = { lat: 11.55, lng: 104.92 };     // Phnom Penh Airport
+  var SR = { lat: 13.41, lng: 103.81 };     // Siem Reap Airport
+  var SHV = { lat: 10.63, lng: 103.52 };    // Sihanoukville Port
+
+  // --- FLIGHT ROUTES from Phnom Penh & Siem Reap ---
+  var FLIGHT_ROUTES = [
+    { from: PP, to: { lat: 13.69, lng: 100.75 }, label: 'PNH-BKK', desc: 'Bangkok (1h)', airline: 'Multiple' },
+    { from: PP, to: { lat: 1.35, lng: 103.99 }, label: 'PNH-SIN', desc: 'Singapore (2h)', airline: 'Multiple' },
+    { from: PP, to: { lat: 10.82, lng: 106.65 }, label: 'PNH-SGN', desc: 'Ho Chi Minh (1h)', airline: 'Multiple' },
+    { from: PP, to: { lat: 21.22, lng: 105.81 }, label: 'PNH-HAN', desc: 'Hanoi (2h)', airline: 'Vietnam Airlines' },
+    { from: PP, to: { lat: 3.14, lng: 101.69 }, label: 'PNH-KUL', desc: 'Kuala Lumpur (2h)', airline: 'AirAsia' },
+    { from: PP, to: { lat: 22.31, lng: 113.91 }, label: 'PNH-HKG', desc: 'Hong Kong (3h)', airline: 'Multiple' },
+    { from: PP, to: { lat: 37.46, lng: 126.44 }, label: 'PNH-ICN', desc: 'Seoul Incheon (5h)', airline: 'Korean Air' },
+    { from: PP, to: { lat: 35.55, lng: 139.78 }, label: 'PNH-NRT', desc: 'Tokyo Narita (6h)', airline: 'ANA' },
+    { from: PP, to: { lat: 31.14, lng: 121.80 }, label: 'PNH-PVG', desc: 'Shanghai (4h)', airline: 'China Eastern' },
+    { from: PP, to: { lat: 39.51, lng: 116.59 }, label: 'PNH-PEK', desc: 'Beijing (5h)', airline: 'Air China' },
+    { from: PP, to: { lat: 23.39, lng: 113.30 }, label: 'PNH-CAN', desc: 'Guangzhou (3h)', airline: 'China Southern' },
+    { from: PP, to: { lat: 25.08, lng: 121.23 }, label: 'PNH-TPE', desc: 'Taipei (4h)', airline: 'EVA Air' },
+    { from: SR, to: { lat: 13.69, lng: 100.75 }, label: 'REP-BKK', desc: 'Siem Reap-Bangkok (1h)', airline: 'Multiple' },
+    { from: SR, to: { lat: 1.35, lng: 103.99 }, label: 'REP-SIN', desc: 'Siem Reap-Singapore (2.5h)', airline: 'Singapore Airlines' },
+    { from: SR, to: { lat: 37.46, lng: 126.44 }, label: 'REP-ICN', desc: 'Siem Reap-Seoul (5.5h)', airline: 'Korean Air' },
+    { from: SR, to: { lat: 22.31, lng: 113.91 }, label: 'REP-HKG', desc: 'Siem Reap-Hong Kong (3h)', airline: 'Cathay Pacific' },
+    { from: PP, to: { lat: 7.12, lng: 100.39 }, label: 'PNH-HDY', desc: 'Hat Yai, Thailand', airline: 'AirAsia' },
+    { from: PP, to: { lat: 14.52, lng: 121.02 }, label: 'PNH-MNL', desc: 'Manila (3h)', airline: 'Cebu Pacific' },
   ];
+
+  // --- SHIPPING LANES from Sihanoukville & Phnom Penh Port ---
+  var SHIPPING_ROUTES = [
+    { from: SHV, to: { lat: 1.26, lng: 103.84 }, label: 'SHV-SIN', desc: 'Singapore (container)', type: 'container' },
+    { from: SHV, to: { lat: 22.28, lng: 114.16 }, label: 'SHV-HKG', desc: 'Hong Kong (general cargo)', type: 'cargo' },
+    { from: SHV, to: { lat: 31.23, lng: 121.47 }, label: 'SHV-SHA', desc: 'Shanghai (container)', type: 'container' },
+    { from: SHV, to: { lat: 13.12, lng: 100.92 }, label: 'SHV-LCB', desc: 'Laem Chabang, Thailand', type: 'container' },
+    { from: SHV, to: { lat: 10.77, lng: 106.71 }, label: 'SHV-SGN', desc: 'Ho Chi Minh Port', type: 'cargo' },
+    { from: SHV, to: { lat: 35.44, lng: 139.64 }, label: 'SHV-YOK', desc: 'Yokohama, Japan', type: 'container' },
+    { from: SHV, to: { lat: 35.10, lng: 129.03 }, label: 'SHV-PUS', desc: 'Busan, S. Korea', type: 'container' },
+    { from: { lat: 11.58, lng: 104.91 }, to: { lat: 10.77, lng: 106.71 }, label: 'PP-SGN', desc: 'PP River Port to HCMC', type: 'river' },
+  ];
+
+  // --- SUBMARINE CABLE ROUTES (approximated waypoints) ---
+  // AAG: Asia-America Gateway, MCT: Malaysia-Cambodia-Thailand, AAE-1: Asia-Africa-Europe 1
+  var SUBMARINE_CABLES = [
+    {
+      name: 'MCT Cable',
+      desc: 'Malaysia-Cambodia-Thailand submarine cable (2017)',
+      color: '#06b6d4',
+      segments: [
+        { from: { lat: 10.55, lng: 103.50 }, to: { lat: 7.88, lng: 102.30 } },
+        { from: { lat: 7.88, lng: 102.30 }, to: { lat: 3.16, lng: 101.70 } },
+        { from: { lat: 10.55, lng: 103.50 }, to: { lat: 12.57, lng: 100.91 } },
+      ],
+    },
+    {
+      name: 'AAG Cable',
+      desc: 'Asia-America Gateway (via Vietnam landing)',
+      color: '#8b5cf6',
+      segments: [
+        { from: { lat: 10.35, lng: 107.08 }, to: { lat: 8.50, lng: 110.00 } },
+        { from: { lat: 8.50, lng: 110.00 }, to: { lat: 1.30, lng: 104.00 } },
+        { from: { lat: 1.30, lng: 104.00 }, to: { lat: 22.30, lng: 114.20 } },
+      ],
+    },
+    {
+      name: 'AAE-1 Cable',
+      desc: 'Asia-Africa-Europe 1 (via Vietnam)',
+      color: '#ec4899',
+      segments: [
+        { from: { lat: 10.35, lng: 107.08 }, to: { lat: 1.30, lng: 104.00 } },
+        { from: { lat: 1.30, lng: 104.00 }, to: { lat: 12.97, lng: 80.18 } },
+        { from: { lat: 12.97, lng: 80.18 }, to: { lat: 12.50, lng: 43.15 } },
+      ],
+    },
+    {
+      name: 'SJC2 Cable',
+      desc: 'Southeast Asia-Japan Cable 2',
+      color: '#f59e0b',
+      segments: [
+        { from: { lat: 10.35, lng: 107.08 }, to: { lat: 22.30, lng: 114.20 } },
+        { from: { lat: 22.30, lng: 114.20 }, to: { lat: 25.05, lng: 121.50 } },
+        { from: { lat: 25.05, lng: 121.50 }, to: { lat: 34.40, lng: 136.90 } },
+      ],
+    },
+  ];
+
+  // Cambodia's internet connectivity comes through Vietnam landing stations
+  var CABLE_LANDING = { lat: 10.35, lng: 107.08, name: 'Vung Tau Landing', desc: 'Vietnam cable landing (Cambodia connects via terrestrial)' };
+  var CAMBODIA_TERRESTRIAL = { from: PP, to: CABLE_LANDING, label: 'Terrestrial Fiber', desc: 'Cambodia-Vietnam fiber link' };
 
   // --- WEATHER CITIES ---
   var WEATHER_CITIES = [
@@ -209,6 +287,107 @@
   var leafletMap = null;
   var layerGroups = {};
 
+  // Globe layer visibility state
+  var globeLayerState = {
+    flights: true,
+    shipping: true,
+    cables: true,
+    locations: true,
+  };
+
+  function buildGlobeArcs() {
+    var arcs = [];
+
+    // Flight routes (white/cyan animated dashes)
+    if (globeLayerState.flights) {
+      FLIGHT_ROUTES.forEach(function (r) {
+        arcs.push({
+          startLat: r.from.lat, startLng: r.from.lng,
+          endLat: r.to.lat, endLng: r.to.lng,
+          color: ['rgba(59,130,246,0.9)', 'rgba(6,182,212,0.7)'],
+          stroke: 0.4, dashLen: 0.3, dashGap: 0.15, animTime: 2500,
+          category: 'flight',
+          label: r.label + ' \u2708 ' + r.desc + (r.airline !== 'Multiple' ? ' (' + r.airline + ')' : ''),
+        });
+      });
+    }
+
+    // Shipping lanes (green/yellow)
+    if (globeLayerState.shipping) {
+      SHIPPING_ROUTES.forEach(function (r) {
+        arcs.push({
+          startLat: r.from.lat, startLng: r.from.lng,
+          endLat: r.to.lat, endLng: r.to.lng,
+          color: ['rgba(16,185,129,0.9)', 'rgba(245,158,11,0.7)'],
+          stroke: 0.7, dashLen: 0.5, dashGap: 0.2, animTime: 4000,
+          category: 'shipping',
+          label: r.label + ' \uD83D\uDEA2 ' + r.desc,
+        });
+      });
+    }
+
+    // Submarine cables (each cable has multiple segments)
+    if (globeLayerState.cables) {
+      SUBMARINE_CABLES.forEach(function (cable) {
+        cable.segments.forEach(function (seg) {
+          arcs.push({
+            startLat: seg.from.lat, startLng: seg.from.lng,
+            endLat: seg.to.lat, endLng: seg.to.lng,
+            color: [cable.color, cable.color],
+            stroke: 1.2, dashLen: 0.8, dashGap: 0.05, animTime: 6000,
+            category: 'cable',
+            label: cable.name + ' \uD83D\uDD0C ' + cable.desc,
+          });
+        });
+      });
+      // Terrestrial fiber link Cambodia-Vietnam
+      arcs.push({
+        startLat: CAMBODIA_TERRESTRIAL.from.lat, startLng: CAMBODIA_TERRESTRIAL.from.lng,
+        endLat: CAMBODIA_TERRESTRIAL.to.lat, endLng: CAMBODIA_TERRESTRIAL.to.lng,
+        color: ['#f97316', '#f97316'],
+        stroke: 1.0, dashLen: 0.6, dashGap: 0.1, animTime: 3000,
+        category: 'cable',
+        label: 'Terrestrial Fiber \uD83D\uDD0C Cambodia-Vietnam fiber backbone',
+      });
+    }
+
+    return arcs;
+  }
+
+  function buildGlobePoints() {
+    var pts = [];
+    if (!globeLayerState.locations) return pts;
+    Object.keys(MAP_LAYERS).forEach(function (layerKey) {
+      MAP_LAYERS[layerKey].forEach(function (loc) {
+        var style = LAYER_STYLES[loc.type] || LAYER_STYLES.city;
+        var emoji = '';
+        if (loc.type === 'capital') emoji = '\uD83C\uDFDB\uFE0F';
+        else if (loc.type === 'city') emoji = '\uD83C\uDFD9\uFE0F';
+        else if (loc.type === 'airport') emoji = '\u2708\uFE0F';
+        else if (loc.type === 'port') emoji = '\u2693';
+        else if (loc.type === 'military') emoji = '\uD83D\uDEE1\uFE0F';
+        else if (loc.type === 'border') emoji = '\uD83D\uDEA7';
+        else if (loc.type === 'sez') emoji = '\uD83C\uDFED';
+        else if (loc.type === 'tourism') emoji = '\uD83C\uDFDB\uFE0F';
+        else if (loc.type === 'waterway') emoji = '\uD83C\uDF0A';
+        else if (loc.type === 'province') emoji = '\uD83D\uDCCD';
+        pts.push({
+          lat: loc.coords[0], lng: loc.coords[1],
+          name: loc.name, desc: loc.desc || '',
+          color: style.color, size: style.size,
+          type: loc.type, emoji: emoji,
+        });
+      });
+    });
+    // Add cable landing point
+    pts.push({
+      lat: CABLE_LANDING.lat, lng: CABLE_LANDING.lng,
+      name: CABLE_LANDING.name, desc: CABLE_LANDING.desc,
+      color: '#06b6d4', size: 0.35, type: 'cable-landing', emoji: '\uD83D\uDD0C',
+    });
+    return pts;
+  }
+
   function initGlobe() {
     var container = document.getElementById('globe-container');
     if (!container || typeof Globe === 'undefined') {
@@ -220,35 +399,6 @@
     var w = container.clientWidth;
     var h = container.clientHeight;
 
-    // Collect all points for globe
-    var globePoints = [];
-    Object.keys(MAP_LAYERS).forEach(function (layerKey) {
-      MAP_LAYERS[layerKey].forEach(function (loc) {
-        var style = LAYER_STYLES[loc.type] || LAYER_STYLES.city;
-        globePoints.push({
-          lat: loc.coords[0],
-          lng: loc.coords[1],
-          name: loc.name,
-          desc: loc.desc || '',
-          color: style.color,
-          size: style.size,
-          type: loc.type,
-        });
-      });
-    });
-
-    // Build arc data
-    var arcData = TRADE_ARCS.map(function (arc) {
-      return {
-        startLat: arc.from.lat,
-        startLng: arc.from.lng,
-        endLat: arc.to.lat,
-        endLng: arc.to.lng,
-        color: arc.color,
-        label: arc.label,
-      };
-    });
-
     globe = Globe()
       .globeImageUrl('//unpkg.com/three-globe/example/img/earth-blue-marble.jpg')
       .bumpImageUrl('//unpkg.com/three-globe/example/img/earth-topology.png')
@@ -257,29 +407,40 @@
       .height(h)
       .atmosphereColor('#3b82f6')
       .atmosphereAltitude(0.2)
-      .pointsData(globePoints)
+      // Points (locations)
+      .pointsData(buildGlobePoints())
       .pointAltitude(0.01)
       .pointRadius(function (d) { return d.size; })
       .pointColor(function (d) { return d.color; })
       .pointLabel(function (d) {
-        return '<div style="font-family:Inter,sans-serif;background:rgba(12,18,32,0.95);padding:8px 12px;border-radius:6px;border:1px solid rgba(26,37,64,0.8);color:#e5e7eb;font-size:12px;min-width:120px">' +
-          '<div style="font-weight:700;margin-bottom:2px">' + d.name + '</div>' +
+        return '<div style="font-family:Inter,sans-serif;background:rgba(12,18,32,0.95);padding:8px 12px;border-radius:6px;border:1px solid rgba(26,37,64,0.8);color:#e5e7eb;font-size:12px;min-width:140px;max-width:240px">' +
+          '<div style="font-weight:700;margin-bottom:2px">' + d.emoji + ' ' + d.name + '</div>' +
           (d.desc ? '<div style="font-size:10px;color:#94a3b8">' + d.desc + '</div>' : '') +
+          '<div style="font-size:9px;color:#5a6a85;margin-top:2px;text-transform:uppercase">' + d.type.replace('-', ' ') + '</div>' +
           '</div>';
       })
-      .arcsData(arcData)
+      // Arcs (flights, shipping, cables)
+      .arcsData(buildGlobeArcs())
       .arcColor(function (d) { return d.color; })
-      .arcStroke(0.6)
-      .arcDashLength(0.4)
-      .arcDashGap(0.2)
-      .arcDashAnimateTime(2000)
+      .arcStroke(function (d) { return d.stroke; })
+      .arcDashLength(function (d) { return d.dashLen; })
+      .arcDashGap(function (d) { return d.dashGap; })
+      .arcDashAnimateTime(function (d) { return d.animTime; })
       .arcLabel(function (d) {
-        return '<div style="font-family:Inter,sans-serif;background:rgba(12,18,32,0.9);padding:4px 8px;border-radius:4px;color:#e5e7eb;font-size:11px">Trade: ' + d.label + '</div>';
+        var icon = d.category === 'flight' ? '\u2708' : d.category === 'shipping' ? '\uD83D\uDEA2' : '\uD83D\uDD0C';
+        return '<div style="font-family:Inter,sans-serif;background:rgba(12,18,32,0.92);padding:6px 10px;border-radius:5px;color:#e5e7eb;font-size:11px;border:1px solid rgba(26,37,64,0.6)">' +
+          icon + ' ' + d.label + '</div>';
       })
       (container);
 
     // Focus on Cambodia
     globe.pointOfView({ lat: 12.5, lng: 105, altitude: 2.2 }, 1000);
+
+    // Disable scroll-wheel zoom so page scrolls normally through the globe
+    var controls = globe.controls();
+    if (controls) {
+      controls.enableZoom = false;
+    }
 
     // Handle resize
     window.addEventListener('resize', function () {
@@ -287,6 +448,39 @@
         globe.width(container.clientWidth).height(container.clientHeight);
       }
     });
+
+    // Globe layer toggle buttons
+    setupGlobeLayerToggles();
+  }
+
+  function refreshGlobe() {
+    if (!globe) return;
+    globe.arcsData(buildGlobeArcs());
+    globe.pointsData(buildGlobePoints());
+  }
+
+  function setupGlobeLayerToggles() {
+    var btns = document.querySelectorAll('.globe-layer-btn');
+    btns.forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var layer = this.dataset.glayer;
+        if (globeLayerState[layer] !== undefined) {
+          globeLayerState[layer] = !globeLayerState[layer];
+          this.classList.toggle('active', globeLayerState[layer]);
+          refreshGlobe();
+          updateArcCounts();
+        }
+      });
+    });
+  }
+
+  function updateArcCounts() {
+    var fc = document.getElementById('gs-flights');
+    var sc = document.getElementById('gs-shipping');
+    var cc = document.getElementById('gs-cables');
+    if (fc) fc.textContent = globeLayerState.flights ? FLIGHT_ROUTES.length : '0';
+    if (sc) sc.textContent = globeLayerState.shipping ? SHIPPING_ROUTES.length : '0';
+    if (cc) cc.textContent = globeLayerState.cables ? SUBMARINE_CABLES.length : '0';
   }
 
   // =========================================================
@@ -1224,47 +1418,17 @@
   }
 
   // =========================================================
-  // RIGHT PANEL TAB SWITCHING
+  // THEME TOGGLE (Dark/Light Mode)
   // =========================================================
-  document.getElementById('right-tabs').addEventListener('click', function (e) {
-    if (e.target.classList.contains('rtab')) {
-      document.querySelectorAll('#right-tabs .rtab').forEach(function (t) { t.classList.remove('active'); });
-      e.target.classList.add('active');
-      var tab = e.target.dataset.rtab;
-      ['intel', 'risk', 'forecast', 'data'].forEach(function (t) {
-        var el = document.getElementById('rtab-' + t);
-        if (el) el.style.display = t === tab ? '' : 'none';
-      });
-    }
+  document.getElementById('theme-toggle').addEventListener('click', function () {
+    document.body.classList.toggle('light-mode');
+    var isLight = document.body.classList.contains('light-mode');
+    localStorage.setItem('cm-theme', isLight ? 'light' : 'dark');
   });
-
-  // =========================================================
-  // PANEL COLLAPSE
-  // =========================================================
-  document.getElementById('left-collapse').addEventListener('click', function () {
-    document.getElementById('left-panel').classList.toggle('collapsed');
-    this.textContent = document.getElementById('left-panel').classList.contains('collapsed') ? '\u25B6' : '\u25C0';
-    // Resize globe/map
-    setTimeout(function () {
-      if (globe && is3D) {
-        var c = document.getElementById('globe-container');
-        globe.width(c.clientWidth).height(c.clientHeight);
-      }
-      if (leafletMap && !is3D) leafletMap.invalidateSize();
-    }, 350);
-  });
-
-  document.getElementById('right-collapse').addEventListener('click', function () {
-    document.getElementById('right-panel').classList.toggle('collapsed');
-    this.textContent = document.getElementById('right-panel').classList.contains('collapsed') ? '\u25C0' : '\u25B6';
-    setTimeout(function () {
-      if (globe && is3D) {
-        var c = document.getElementById('globe-container');
-        globe.width(c.clientWidth).height(c.clientHeight);
-      }
-      if (leafletMap && !is3D) leafletMap.invalidateSize();
-    }, 350);
-  });
+  // Restore saved theme
+  if (localStorage.getItem('cm-theme') === 'light') {
+    document.body.classList.add('light-mode');
+  }
 
   // =========================================================
   // ABOUT MODAL
