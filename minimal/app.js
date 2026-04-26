@@ -1,92 +1,33 @@
 // =========================================================
-// Cambodia Monitor - Real-Time Intelligence Dashboard
-// Free version: uses Open-Meteo (weather), RSS2JSON (news),
-// Leaflet + CartoDB dark tiles (map). No API keys required.
+// Cambodia Monitor v3.0 - AI Intelligence Dashboard
+// Features: 3D Globe, AI News Analysis, Economic Forecasting,
+// Strategic Risk Assessment, Exchange Rates (8 currencies)
+// Free APIs only: Open-Meteo, World Bank, RSS2JSON, Globe.gl
 // =========================================================
 
 (function () {
   'use strict';
 
   // --- CORS proxy for RSS feeds ---
-  const RSS2JSON_BASE = 'https://api.rss2json.com/v1/api.json?rss_url=';
-  const ALLORIGINS_BASE = 'https://api.allorigins.win/get?url=';
+  var RSS2JSON_BASE = 'https://api.rss2json.com/v1/api.json?rss_url=';
+  var ALLORIGINS_BASE = 'https://api.allorigins.win/get?url=';
 
   // --- NEWS FEED SOURCES ---
-  const FEED_SOURCES = [
-    {
-      id: 'khmer-times',
-      name: 'Khmer Times',
-      url: 'https://www.khmertimeskh.com/feed/',
-      color: 'source-khmer-times',
-      local: true,
-    },
-    {
-      id: 'pp-post',
-      name: 'Phnom Penh Post',
-      url: 'https://www.phnompenhpost.com/rss',
-      color: 'source-pp-post',
-      local: true,
-    },
-    {
-      id: 'voa',
-      name: 'VOA Cambodia',
-      url: 'https://www.voacambodia.com/api/zq_eoqe$oii',
-      color: 'source-voa',
-      local: true,
-    },
-    {
-      id: 'cambodianess',
-      name: 'Cambodianess',
-      url: 'https://cambodianess.com/feed',
-      color: 'source-cambodianess',
-      local: true,
-    },
-    {
-      id: 'asean',
-      name: 'ASEAN Affairs',
-      url: 'https://aseanaffairs.com/feed/',
-      color: 'source-asean',
-      local: false,
-    },
-    {
-      id: 'reuters',
-      name: 'Reuters',
-      url: 'https://www.reutersagency.com/feed/',
-      color: 'source-reuters',
-      local: false,
-    },
-    {
-      id: 'aljazeera',
-      name: 'Al Jazeera',
-      url: 'https://www.aljazeera.com/xml/rss/all.xml',
-      color: 'source-aljazeera',
-      local: false,
-    },
-    {
-      id: 'bbc',
-      name: 'BBC News',
-      url: 'https://feeds.bbci.co.uk/news/world/asia/rss.xml',
-      color: 'source-bbc',
-      local: false,
-    },
-    {
-      id: 'ap',
-      name: 'AP News',
-      url: 'https://rsshub.app/apnews/topics/world-news',
-      color: 'source-ap',
-      local: false,
-    },
-    {
-      id: 'nikkei',
-      name: 'Nikkei Asia',
-      url: 'https://asia.nikkei.com/rss',
-      color: 'source-nikkei',
-      local: false,
-    },
+  var FEED_SOURCES = [
+    { id: 'khmer-times', name: 'Khmer Times', url: 'https://www.khmertimeskh.com/feed/', color: 'source-khmer-times', local: true },
+    { id: 'pp-post', name: 'Phnom Penh Post', url: 'https://www.phnompenhpost.com/rss', color: 'source-pp-post', local: true },
+    { id: 'voa', name: 'VOA Cambodia', url: 'https://www.voacambodia.com/api/zq_eoqe$oii', color: 'source-voa', local: true },
+    { id: 'cambodianess', name: 'Cambodianess', url: 'https://cambodianess.com/feed', color: 'source-cambodianess', local: true },
+    { id: 'asean', name: 'ASEAN Affairs', url: 'https://aseanaffairs.com/feed/', color: 'source-asean', local: false },
+    { id: 'reuters', name: 'Reuters', url: 'https://www.reutersagency.com/feed/', color: 'source-reuters', local: false },
+    { id: 'aljazeera', name: 'Al Jazeera', url: 'https://www.aljazeera.com/xml/rss/all.xml', color: 'source-aljazeera', local: false },
+    { id: 'bbc', name: 'BBC News', url: 'https://feeds.bbci.co.uk/news/world/asia/rss.xml', color: 'source-bbc', local: false },
+    { id: 'ap', name: 'AP News', url: 'https://rsshub.app/apnews/topics/world-news', color: 'source-ap', local: false },
+    { id: 'nikkei', name: 'Nikkei Asia', url: 'https://asia.nikkei.com/rss', color: 'source-nikkei', local: false },
   ];
 
   // --- Cambodia-focused keywords for filtering ---
-  const CAMBODIA_KEYWORDS = [
+  var CAMBODIA_KEYWORDS = [
     'cambodia', 'cambodian', 'khmer', 'phnom penh', 'siem reap',
     'sihanoukville', 'battambang', 'kampot', 'koh kong', 'kampong cham',
     'kampong thom', 'prey veng', 'takeo', 'svay rieng', 'banteay meanchey',
@@ -94,8 +35,76 @@
     'asean', 'ream naval', 'preah vihear', 'poipet', 'bavet',
   ];
 
-  // --- MAP LOCATIONS DATA ---
-  const MAP_LAYERS = {
+  // =========================================================
+  // AI ENGINE - Sentiment, Categorization, Priority
+  // =========================================================
+  var AI_POSITIVE = ['growth', 'increase', 'improve', 'boost', 'record', 'success', 'expand', 'develop', 'invest', 'progress', 'surge', 'recovery', 'strengthen', 'stable', 'cooperation', 'agreement', 'opportunity', 'innovation', 'award', 'achieve'];
+  var AI_NEGATIVE = ['decline', 'fall', 'crisis', 'threat', 'risk', 'conflict', 'concern', 'drop', 'damage', 'corruption', 'protest', 'violence', 'arrest', 'flood', 'drought', 'sanction', 'debt', 'poverty', 'collapse', 'dispute'];
+  var AI_BREAKING = ['breaking', 'urgent', 'just in', 'developing', 'alert', 'emergency', 'exclusive', 'latest'];
+
+  var AI_CATEGORIES = {
+    politics: ['government', 'minister', 'election', 'policy', 'parliament', 'hun manet', 'hun sen', 'party', 'political', 'legislation', 'diplomat', 'summit', 'bilateral'],
+    economy: ['gdp', 'trade', 'investment', 'economic', 'business', 'export', 'import', 'fdi', 'inflation', 'market', 'financial', 'bank', 'budget', 'revenue', 'growth'],
+    security: ['military', 'security', 'defense', 'border', 'crime', 'police', 'terrorism', 'drug', 'trafficking', 'ream naval', 'armed'],
+    trade: ['trade', 'export', 'import', 'tariff', 'commerce', 'asean', 'bilateral', 'customs', 'goods', 'supply chain', 'logistics'],
+    infrastructure: ['airport', 'road', 'bridge', 'port', 'construction', 'rail', 'highway', 'sez', 'development', 'project'],
+    tourism: ['tourism', 'tourist', 'angkor', 'hotel', 'visitor', 'travel', 'heritage', 'siem reap'],
+  };
+
+  function aiAnalyzeSentiment(text) {
+    var lower = text.toLowerCase();
+    var posCount = 0;
+    var negCount = 0;
+    AI_POSITIVE.forEach(function (w) { if (lower.includes(w)) posCount++; });
+    AI_NEGATIVE.forEach(function (w) { if (lower.includes(w)) negCount++; });
+    if (posCount > negCount + 1) return 'positive';
+    if (negCount > posCount + 1) return 'negative';
+    if (posCount > negCount) return 'positive';
+    if (negCount > posCount) return 'negative';
+    return 'neutral';
+  }
+
+  function aiCategorize(text) {
+    var lower = text.toLowerCase();
+    var scores = {};
+    Object.keys(AI_CATEGORIES).forEach(function (cat) {
+      scores[cat] = 0;
+      AI_CATEGORIES[cat].forEach(function (kw) {
+        if (lower.includes(kw)) scores[cat]++;
+      });
+    });
+    var best = 'economy';
+    var bestScore = 0;
+    Object.keys(scores).forEach(function (cat) {
+      if (scores[cat] > bestScore) { bestScore = scores[cat]; best = cat; }
+    });
+    return best;
+  }
+
+  function aiPriority(text) {
+    var lower = text.toLowerCase();
+    var isBreaking = AI_BREAKING.some(function (w) { return lower.includes(w); });
+    if (isBreaking) return 'high';
+    var neg = 0;
+    AI_NEGATIVE.forEach(function (w) { if (lower.includes(w)) neg++; });
+    if (neg >= 3) return 'high';
+    if (neg >= 1) return 'medium';
+    return 'low';
+  }
+
+  function aiEnrichItem(item) {
+    var fullText = item.title + ' ' + item.snippet;
+    item.sentiment = aiAnalyzeSentiment(fullText);
+    item.category = aiCategorize(fullText);
+    item.priority = aiPriority(fullText);
+    item.isBreaking = AI_BREAKING.some(function (w) { return fullText.toLowerCase().includes(w); });
+    return item;
+  }
+
+  // =========================================================
+  // MAP LOCATIONS DATA
+  // =========================================================
+  var MAP_LAYERS = {
     cities: [
       { name: 'Phnom Penh', coords: [11.5564, 104.9282], type: 'capital', pop: '2.3M', desc: 'Capital & economic center' },
       { name: 'Siem Reap', coords: [13.3633, 103.8564], type: 'city', pop: '250K', desc: 'Tourism hub - Angkor Wat' },
@@ -159,51 +168,166 @@
     ],
   };
 
-  const LAYER_STYLES = {
-    capital: { color: '#ef4444', radius: 9, fillOpacity: 0.9 },
-    city: { color: '#f59e0b', radius: 6, fillOpacity: 0.7 },
-    port: { color: '#10b981', radius: 7, fillOpacity: 0.8 },
-    province: { color: '#f59e0b', radius: 3, fillOpacity: 0.3 },
-    border: { color: '#8b5cf6', radius: 7, fillOpacity: 0.8 },
-    sez: { color: '#10b981', radius: 7, fillOpacity: 0.7 },
-    airport: { color: '#3b82f6', radius: 7, fillOpacity: 0.8 },
-    military: { color: '#ef4444', radius: 7, fillOpacity: 0.7 },
-    tourism: { color: '#ec4899', radius: 6, fillOpacity: 0.7 },
-    waterway: { color: '#06b6d4', radius: 5, fillOpacity: 0.6 },
+  var LAYER_STYLES = {
+    capital: { color: '#ef4444', radius: 9, fillOpacity: 0.9, size: 0.6 },
+    city: { color: '#f59e0b', radius: 6, fillOpacity: 0.7, size: 0.35 },
+    port: { color: '#10b981', radius: 7, fillOpacity: 0.8, size: 0.4 },
+    province: { color: '#f59e0b', radius: 3, fillOpacity: 0.3, size: 0.15 },
+    border: { color: '#8b5cf6', radius: 7, fillOpacity: 0.8, size: 0.4 },
+    sez: { color: '#10b981', radius: 7, fillOpacity: 0.7, size: 0.35 },
+    airport: { color: '#3b82f6', radius: 7, fillOpacity: 0.8, size: 0.4 },
+    military: { color: '#ef4444', radius: 7, fillOpacity: 0.7, size: 0.4 },
+    tourism: { color: '#ec4899', radius: 6, fillOpacity: 0.7, size: 0.35 },
+    waterway: { color: '#06b6d4', radius: 5, fillOpacity: 0.6, size: 0.25 },
   };
 
+  // Trade route arcs from Phnom Penh to major partners
+  var TRADE_ARCS = [
+    { from: { lat: 11.55, lng: 104.92 }, to: { lat: 39.90, lng: 116.40 }, color: ['#ef4444', '#f59e0b'], label: 'China' },
+    { from: { lat: 11.55, lng: 104.92 }, to: { lat: 38.90, lng: -77.03 }, color: ['#3b82f6', '#06b6d4'], label: 'USA' },
+    { from: { lat: 11.55, lng: 104.92 }, to: { lat: 13.75, lng: 100.50 }, color: ['#10b981', '#f59e0b'], label: 'Thailand' },
+    { from: { lat: 11.55, lng: 104.92 }, to: { lat: 21.02, lng: 105.85 }, color: ['#8b5cf6', '#ec4899'], label: 'Vietnam' },
+    { from: { lat: 11.55, lng: 104.92 }, to: { lat: 35.68, lng: 139.69 }, color: ['#f97316', '#ef4444'], label: 'Japan' },
+    { from: { lat: 11.55, lng: 104.92 }, to: { lat: 37.55, lng: 126.97 }, color: ['#06b6d4', '#3b82f6'], label: 'S. Korea' },
+    { from: { lat: 11.55, lng: 104.92 }, to: { lat: 50.85, lng: 4.35 }, color: ['#8b5cf6', '#3b82f6'], label: 'EU' },
+    { from: { lat: 11.55, lng: 104.92 }, to: { lat: 1.35, lng: 103.82 }, color: ['#10b981', '#06b6d4'], label: 'Singapore' },
+  ];
+
   // --- WEATHER CITIES ---
-  const WEATHER_CITIES = [
+  var WEATHER_CITIES = [
     { name: 'Phnom Penh', lat: 11.5564, lon: 104.9282 },
     { name: 'Siem Reap', lat: 13.3633, lon: 103.8564 },
     { name: 'Sihanoukville', lat: 10.6291, lon: 103.5278 },
     { name: 'Battambang', lat: 13.0957, lon: 103.2022 },
   ];
 
-  // ========================
-  // MAP INITIALIZATION
-  // ========================
-  const map = L.map('map', {
-    center: [12.5, 105],
-    zoom: 7,
-    zoomControl: true,
-    attributionControl: true,
-  });
+  // =========================================================
+  // 3D GLOBE INITIALIZATION (Globe.gl)
+  // =========================================================
+  var globe = null;
+  var is3D = true;
+  var leafletMap = null;
+  var layerGroups = {};
 
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/">CARTO</a>',
-    maxZoom: 19,
-    subdomains: 'abcd',
-  }).addTo(map);
+  function initGlobe() {
+    var container = document.getElementById('globe-container');
+    if (!container || typeof Globe === 'undefined') {
+      console.warn('Globe.gl not available, falling back to 2D');
+      switchTo2D();
+      return;
+    }
 
-  // Layer groups
-  const layerGroups = {};
-  Object.keys(MAP_LAYERS).forEach(key => {
-    layerGroups[key] = L.layerGroup();
-  });
+    var w = container.clientWidth;
+    var h = container.clientHeight;
+
+    // Collect all points for globe
+    var globePoints = [];
+    Object.keys(MAP_LAYERS).forEach(function (layerKey) {
+      MAP_LAYERS[layerKey].forEach(function (loc) {
+        var style = LAYER_STYLES[loc.type] || LAYER_STYLES.city;
+        globePoints.push({
+          lat: loc.coords[0],
+          lng: loc.coords[1],
+          name: loc.name,
+          desc: loc.desc || '',
+          color: style.color,
+          size: style.size,
+          type: loc.type,
+        });
+      });
+    });
+
+    // Build arc data
+    var arcData = TRADE_ARCS.map(function (arc) {
+      return {
+        startLat: arc.from.lat,
+        startLng: arc.from.lng,
+        endLat: arc.to.lat,
+        endLng: arc.to.lng,
+        color: arc.color,
+        label: arc.label,
+      };
+    });
+
+    globe = Globe()
+      .globeImageUrl('//unpkg.com/three-globe/example/img/earth-blue-marble.jpg')
+      .bumpImageUrl('//unpkg.com/three-globe/example/img/earth-topology.png')
+      .backgroundImageUrl('//unpkg.com/three-globe/example/img/night-sky.png')
+      .width(w)
+      .height(h)
+      .atmosphereColor('#3b82f6')
+      .atmosphereAltitude(0.2)
+      .pointsData(globePoints)
+      .pointAltitude(0.01)
+      .pointRadius(function (d) { return d.size; })
+      .pointColor(function (d) { return d.color; })
+      .pointLabel(function (d) {
+        return '<div style="font-family:Inter,sans-serif;background:rgba(12,18,32,0.95);padding:8px 12px;border-radius:6px;border:1px solid rgba(26,37,64,0.8);color:#e5e7eb;font-size:12px;min-width:120px">' +
+          '<div style="font-weight:700;margin-bottom:2px">' + d.name + '</div>' +
+          (d.desc ? '<div style="font-size:10px;color:#94a3b8">' + d.desc + '</div>' : '') +
+          '</div>';
+      })
+      .arcsData(arcData)
+      .arcColor(function (d) { return d.color; })
+      .arcStroke(0.6)
+      .arcDashLength(0.4)
+      .arcDashGap(0.2)
+      .arcDashAnimateTime(2000)
+      .arcLabel(function (d) {
+        return '<div style="font-family:Inter,sans-serif;background:rgba(12,18,32,0.9);padding:4px 8px;border-radius:4px;color:#e5e7eb;font-size:11px">Trade: ' + d.label + '</div>';
+      })
+      (container);
+
+    // Focus on Cambodia
+    globe.pointOfView({ lat: 12.5, lng: 105, altitude: 2.2 }, 1000);
+
+    // Handle resize
+    window.addEventListener('resize', function () {
+      if (globe && is3D) {
+        globe.width(container.clientWidth).height(container.clientHeight);
+      }
+    });
+  }
+
+  // =========================================================
+  // 2D MAP INITIALIZATION (Leaflet)
+  // =========================================================
+  function init2DMap() {
+    if (leafletMap) return;
+
+    leafletMap = L.map('map', {
+      center: [12.5, 105],
+      zoom: 7,
+      zoomControl: true,
+      attributionControl: true,
+    });
+
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/">CARTO</a>',
+      maxZoom: 19,
+      subdomains: 'abcd',
+    }).addTo(leafletMap);
+
+    Object.keys(MAP_LAYERS).forEach(function (key) {
+      layerGroups[key] = L.layerGroup();
+    });
+
+    populateLayers();
+    syncLayers();
+
+    document.querySelectorAll('#layer-list input[type="checkbox"]').forEach(function (cb) {
+      cb.addEventListener('change', syncLayers);
+    });
+
+    document.getElementById('layer-toggle').addEventListener('click', function () {
+      var list = document.getElementById('layer-list');
+      list.classList.toggle('collapsed');
+      this.textContent = list.classList.contains('collapsed') ? '\u25B6' : '\u25BC';
+    });
+  }
 
   function createPopupContent(loc) {
-    let html = '<div style="font-family:Inter,sans-serif;min-width:140px">';
+    var html = '<div style="font-family:Inter,sans-serif;min-width:140px">';
     html += '<div style="font-weight:700;font-size:13px;margin-bottom:4px">' + loc.name + '</div>';
     if (loc.desc) html += '<div style="font-size:11px;color:#94a3b8;margin-bottom:2px">' + loc.desc + '</div>';
     if (loc.pop) html += '<div style="font-size:11px;color:#64748b">Pop: ' + loc.pop + '</div>';
@@ -212,12 +336,13 @@
   }
 
   function populateLayers() {
-    Object.keys(MAP_LAYERS).forEach(layerKey => {
-      const group = layerGroups[layerKey];
+    Object.keys(MAP_LAYERS).forEach(function (layerKey) {
+      var group = layerGroups[layerKey];
+      if (!group) return;
       group.clearLayers();
-      MAP_LAYERS[layerKey].forEach(loc => {
-        const style = LAYER_STYLES[loc.type] || LAYER_STYLES.city;
-        const marker = L.circleMarker(loc.coords, {
+      MAP_LAYERS[layerKey].forEach(function (loc) {
+        var style = LAYER_STYLES[loc.type] || LAYER_STYLES.city;
+        var marker = L.circleMarker(loc.coords, {
           radius: style.radius,
           fillColor: style.color,
           color: '#fff',
@@ -231,84 +356,84 @@
     });
   }
 
-  populateLayers();
-
-  // Add default visible layers
   function syncLayers() {
-    const checkboxes = document.querySelectorAll('#layer-list input[type="checkbox"]');
-    let count = 0;
-    checkboxes.forEach(cb => {
-      const layerKey = cb.dataset.layer;
+    var checkboxes = document.querySelectorAll('#layer-list input[type="checkbox"]');
+    var count = 0;
+    checkboxes.forEach(function (cb) {
+      var layerKey = cb.dataset.layer;
       if (cb.checked) {
-        if (!map.hasLayer(layerGroups[layerKey])) map.addLayer(layerGroups[layerKey]);
+        if (leafletMap && !leafletMap.hasLayer(layerGroups[layerKey])) leafletMap.addLayer(layerGroups[layerKey]);
         count++;
       } else {
-        if (map.hasLayer(layerGroups[layerKey])) map.removeLayer(layerGroups[layerKey]);
+        if (leafletMap && leafletMap.hasLayer(layerGroups[layerKey])) leafletMap.removeLayer(layerGroups[layerKey]);
       }
     });
-    document.getElementById('layer-count').textContent = count;
+    var countEl = document.getElementById('layer-count');
+    if (countEl) countEl.textContent = count;
   }
 
-  syncLayers();
+  // =========================================================
+  // MAP TOGGLE (2D/3D)
+  // =========================================================
+  function switchTo3D() {
+    document.getElementById('globe-wrapper').style.display = '';
+    document.getElementById('map-wrapper').style.display = 'none';
+    document.getElementById('map-toggle-label').textContent = '3D';
+    is3D = true;
+    if (!globe) initGlobe();
+  }
 
-  document.querySelectorAll('#layer-list input[type="checkbox"]').forEach(cb => {
-    cb.addEventListener('change', syncLayers);
+  function switchTo2D() {
+    document.getElementById('globe-wrapper').style.display = 'none';
+    document.getElementById('map-wrapper').style.display = '';
+    document.getElementById('map-toggle-label').textContent = '2D';
+    is3D = false;
+    init2DMap();
+    setTimeout(function () { if (leafletMap) leafletMap.invalidateSize(); }, 100);
+  }
+
+  document.getElementById('map-toggle').addEventListener('click', function () {
+    if (is3D) { switchTo2D(); } else { switchTo3D(); }
   });
 
-  // Layer panel collapse
-  document.getElementById('layer-toggle').addEventListener('click', function () {
-    const list = document.getElementById('layer-list');
-    list.classList.toggle('collapsed');
-    this.textContent = list.classList.contains('collapsed') ? '\u25B6' : '\u25BC';
-  });
-
-  // ========================
+  // =========================================================
   // CLOCK
-  // ========================
+  // =========================================================
   function updateClock() {
-    const now = new Date();
-    const options = {
-      weekday: 'short',
-      day: '2-digit',
-      month: 'short',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit',
-      hour12: false,
-      timeZone: 'Asia/Phnom_Penh',
+    var now = new Date();
+    var options = {
+      weekday: 'short', day: '2-digit', month: 'short', year: 'numeric',
+      hour: '2-digit', minute: '2-digit', second: '2-digit',
+      hour12: false, timeZone: 'Asia/Phnom_Penh',
     };
-    const formatted = now.toLocaleString('en-US', options).toUpperCase().replace(/,/g, '') + ' ICT';
+    var formatted = now.toLocaleString('en-US', options).toUpperCase().replace(/,/g, '') + ' ICT';
     document.getElementById('top-clock').textContent = formatted;
   }
   updateClock();
   setInterval(updateClock, 1000);
 
-  // Simulated viewer count
   function updateViewers() {
-    const base = 12 + Math.floor(Math.random() * 30);
+    var base = 12 + Math.floor(Math.random() * 30);
     document.getElementById('viewer-count').textContent = base + ' online';
   }
   updateViewers();
   setInterval(updateViewers, 30000);
 
-  // ========================
-  // NEWS FETCHING
-  // ========================
-  let allNewsItems = [];
-  let currentFeedFilter = 'all';
+  // =========================================================
+  // NEWS FETCHING WITH AI ENRICHMENT
+  // =========================================================
+  var allNewsItems = [];
+  var currentFeedFilter = 'all';
 
   async function fetchRSS(source) {
-    const items = [];
+    var items = [];
     try {
-      // Try rss2json first
-      const url = RSS2JSON_BASE + encodeURIComponent(source.url);
-      const resp = await fetch(url);
+      var url = RSS2JSON_BASE + encodeURIComponent(source.url);
+      var resp = await fetch(url);
       if (!resp.ok) throw new Error('rss2json failed');
-      const data = await resp.json();
-
+      var data = await resp.json();
       if (data.status === 'ok' && data.items) {
-        data.items.forEach(item => {
+        data.items.forEach(function (item) {
           items.push({
             title: stripHtml(item.title || ''),
             link: item.link || '#',
@@ -320,18 +445,16 @@
           });
         });
       } else {
-        throw new Error('rss2json returned non-ok status: ' + (data.status || 'unknown'));
+        throw new Error('rss2json non-ok');
       }
     } catch (e1) {
-      // Fallback: try allorigins
       try {
-        const url = ALLORIGINS_BASE + encodeURIComponent(source.url);
-        const resp = await fetch(url);
-        if (!resp.ok) throw new Error('allorigins failed');
-        const data = await resp.json();
-        if (data.contents) {
-          const parsed = parseRSSXml(data.contents, source);
-          items.push(...parsed);
+        var url2 = ALLORIGINS_BASE + encodeURIComponent(source.url);
+        var resp2 = await fetch(url2);
+        if (!resp2.ok) throw new Error('allorigins failed');
+        var data2 = await resp2.json();
+        if (data2.contents) {
+          items.push.apply(items, parseRSSXml(data2.contents, source));
         }
       } catch (e2) {
         console.warn('Failed to fetch ' + source.name + ':', e2.message);
@@ -341,7 +464,7 @@
   }
 
   function stripHtml(html) {
-    const tmp = document.createElement('div');
+    var tmp = document.createElement('div');
     tmp.innerHTML = html;
     return (tmp.textContent || tmp.innerText || '').trim();
   }
@@ -351,16 +474,16 @@
   }
 
   function parseRSSXml(xmlStr, source) {
-    const items = [];
+    var items = [];
     try {
-      const parser = new DOMParser();
-      const doc = parser.parseFromString(xmlStr, 'text/xml');
-      const entries = doc.querySelectorAll('item, entry');
-      entries.forEach(entry => {
-        const title = entry.querySelector('title');
-        const link = entry.querySelector('link');
-        const pubDate = entry.querySelector('pubDate, published, updated');
-        const desc = entry.querySelector('description, summary, content');
+      var parser = new DOMParser();
+      var doc = parser.parseFromString(xmlStr, 'text/xml');
+      var entries = doc.querySelectorAll('item, entry');
+      entries.forEach(function (entry) {
+        var title = entry.querySelector('title');
+        var link = entry.querySelector('link');
+        var pubDate = entry.querySelector('pubDate, published, updated');
+        var desc = entry.querySelector('description, summary, content');
         items.push({
           title: stripHtml(title ? title.textContent : ''),
           link: link ? (link.getAttribute('href') || link.textContent || '#') : '#',
@@ -378,32 +501,39 @@
   }
 
   function timeAgo(date) {
-    const seconds = Math.floor((new Date() - date) / 1000);
+    var seconds = Math.floor((new Date() - date) / 1000);
     if (seconds < 60) return 'now';
-    if (seconds < 3600) return Math.floor(seconds / 60) + 'm ago';
-    if (seconds < 86400) return Math.floor(seconds / 3600) + 'h ago';
-    return Math.floor(seconds / 86400) + 'd ago';
+    if (seconds < 3600) return Math.floor(seconds / 60) + 'm';
+    if (seconds < 86400) return Math.floor(seconds / 3600) + 'h';
+    return Math.floor(seconds / 86400) + 'd';
   }
 
   function isRelevant(item) {
-    const src = FEED_SOURCES.find(s => s.id === item.sourceId);
+    var src = FEED_SOURCES.find(function (s) { return s.id === item.sourceId; });
     if (src && src.local) return true;
-    const text = (item.title + ' ' + item.snippet).toLowerCase();
-    return CAMBODIA_KEYWORDS.some(kw => text.includes(kw));
+    var text = (item.title + ' ' + item.snippet).toLowerCase();
+    return CAMBODIA_KEYWORDS.some(function (kw) { return text.includes(kw); });
   }
 
   function renderNews() {
-    const container = document.getElementById('news-feed');
-    const searchTerm = document.getElementById('search-input').value.toLowerCase().trim();
+    var container = document.getElementById('news-feed');
+    var searchTerm = document.getElementById('search-input').value.toLowerCase().trim();
 
-    let filtered = allNewsItems.filter(item => {
-      if (currentFeedFilter !== 'all' && item.sourceId !== currentFeedFilter) return false;
+    var filtered = allNewsItems.filter(function (item) {
+      if (currentFeedFilter === 'breaking') return item.isBreaking;
+      if (currentFeedFilter !== 'all' && AI_CATEGORIES[currentFeedFilter]) {
+        return item.category === currentFeedFilter;
+      }
       if (searchTerm && !(item.title + ' ' + item.snippet).toLowerCase().includes(searchTerm)) return false;
       return true;
     });
 
-    // Sort by date descending
-    filtered.sort((a, b) => b.pubDate - a.pubDate);
+    // Sort: breaking first, then by date
+    filtered.sort(function (a, b) {
+      if (a.isBreaking && !b.isBreaking) return -1;
+      if (!a.isBreaking && b.isBreaking) return 1;
+      return b.pubDate - a.pubDate;
+    });
 
     document.getElementById('news-total').textContent = filtered.length;
 
@@ -413,236 +543,588 @@
     }
 
     container.innerHTML = '';
-    filtered.slice(0, 50).forEach(item => {
-      const div = document.createElement('div');
-      div.className = 'news-item';
-      div.onclick = () => window.open(item.link, '_blank');
+    filtered.slice(0, 50).forEach(function (item) {
+      var div = document.createElement('div');
+      div.className = 'news-item' + (item.isBreaking ? ' breaking' : '');
+      div.onclick = function () { window.open(item.link, '_blank'); };
+
+      var sentimentClass = item.sentiment === 'positive' ? 'sentiment-pos' : item.sentiment === 'negative' ? 'sentiment-neg' : 'sentiment-neu';
+      var sentimentLabel = item.sentiment === 'positive' ? '+' : item.sentiment === 'negative' ? '-' : '~';
+      var catLabel = item.category ? item.category.charAt(0).toUpperCase() + item.category.slice(1) : '';
+
       div.innerHTML =
         '<div class="news-time-col">' + timeAgo(item.pubDate) + '</div>' +
         '<div class="news-body">' +
-          '<span class="news-source-tag ' + escapeHtml(item.sourceColor) + '">' + escapeHtml(item.source) + '</span>' +
+          '<div class="news-tags">' +
+            '<span class="news-source-tag ' + escapeHtml(item.sourceColor) + '">' + escapeHtml(item.source) + '</span>' +
+            (catLabel ? '<span class="news-cat-tag">' + catLabel + '</span>' : '') +
+            '<span class="news-sentiment ' + sentimentClass + '">' + sentimentLabel + '</span>' +
+          '</div>' +
           '<div class="news-headline">' + escapeHtml(item.title) + '</div>' +
           (item.snippet ? '<div class="news-snippet">' + escapeHtml(item.snippet) + '</div>' : '') +
-        '</div>';
+        '</div>' +
+        '<div class="news-priority priority-' + (item.priority || 'low') + '"></div>';
       container.appendChild(div);
     });
+
+    // Update sentiment analysis bar
+    updateSentimentBar();
+    // Update globe stats
+    updateGlobeStats();
+  }
+
+  function updateSentimentBar() {
+    var pos = 0;
+    var neg = 0;
+    var neu = 0;
+    allNewsItems.forEach(function (item) {
+      if (item.sentiment === 'positive') pos++;
+      else if (item.sentiment === 'negative') neg++;
+      else neu++;
+    });
+    var total = pos + neg + neu || 1;
+    var posP = Math.round(pos / total * 100);
+    var negP = Math.round(neg / total * 100);
+    var neuP = 100 - posP - negP;
+
+    var posBar = document.getElementById('sbar-pos');
+    var neuBar = document.getElementById('sbar-neu');
+    var negBar = document.getElementById('sbar-neg');
+    if (posBar) posBar.style.width = posP + '%';
+    if (neuBar) neuBar.style.width = neuP + '%';
+    if (negBar) negBar.style.width = negP + '%';
+
+    var posLabel = document.getElementById('slabel-pos');
+    var neuLabel = document.getElementById('slabel-neu');
+    var negLabel = document.getElementById('slabel-neg');
+    if (posLabel) posLabel.textContent = 'Positive ' + posP + '%';
+    if (neuLabel) neuLabel.textContent = 'Neutral ' + neuP + '%';
+    if (negLabel) negLabel.textContent = 'Negative ' + negP + '%';
+  }
+
+  function updateGlobeStats() {
+    var evEl = document.getElementById('gs-events');
+    var riskEl = document.getElementById('gs-risk');
+    if (evEl) evEl.textContent = allNewsItems.length;
+    if (riskEl) {
+      var neg = allNewsItems.filter(function (i) { return i.sentiment === 'negative'; }).length;
+      var total = allNewsItems.length || 1;
+      var ratio = neg / total;
+      riskEl.textContent = ratio > 0.4 ? 'HIGH' : ratio > 0.2 ? 'MODERATE' : 'LOW';
+    }
   }
 
   async function loadAllNews() {
-    const container = document.getElementById('news-feed');
-    container.innerHTML = '<div class="loading-state"><div class="spinner"></div><span>Loading feeds...</span></div>';
+    var container = document.getElementById('news-feed');
+    container.innerHTML = '<div class="loading-state"><div class="spinner"></div><span>AI analyzing feeds...</span></div>';
 
-    const promises = FEED_SOURCES.map(src => fetchRSS(src));
-    const results = await Promise.allSettled(promises);
+    var promises = FEED_SOURCES.map(function (src) { return fetchRSS(src); });
+    var results = await Promise.allSettled(promises);
 
     allNewsItems = [];
-    results.forEach(result => {
+    results.forEach(function (result) {
       if (result.status === 'fulfilled') {
-        allNewsItems.push(...result.value.filter(isRelevant));
+        result.value.filter(isRelevant).forEach(function (item) {
+          allNewsItems.push(aiEnrichItem(item));
+        });
       }
     });
 
-    // If no live feeds, add fallback data
     if (allNewsItems.length === 0) {
-      allNewsItems = getFallbackNews();
+      allNewsItems = getFallbackNews().map(aiEnrichItem);
     }
 
     renderNews();
+    generateIntelBrief();
+    generateKeyEvents();
   }
 
   function getFallbackNews() {
-    const now = new Date();
+    var now = new Date();
     return [
       { title: 'Cambodia GDP growth projected at 6.5% for 2026', link: '#', pubDate: new Date(now - 2 * 3600000), source: 'Khmer Times', sourceId: 'khmer-times', sourceColor: 'source-khmer-times', snippet: 'Economic growth remains strong driven by tourism, construction, and garment exports.' },
-      { title: 'Hun Manet meets with ASEAN leaders to discuss regional trade', link: '#', pubDate: new Date(now - 4 * 3600000), source: 'Phnom Penh Post', sourceId: 'pp-post', sourceColor: 'source-pp-post', snippet: 'Prime Minister Hun Manet attended the ASEAN Economic Forum in Jakarta.' },
-      { title: 'New Siem Reap international airport sees record passenger numbers', link: '#', pubDate: new Date(now - 6 * 3600000), source: 'VOA Cambodia', sourceId: 'voa', sourceColor: 'source-voa', snippet: 'The newly opened airport has significantly boosted tourism to Angkor Wat.' },
-      { title: 'Sihanoukville port expansion project enters phase 2', link: '#', pubDate: new Date(now - 8 * 3600000), source: 'Cambodianess', sourceId: 'cambodianess', sourceColor: 'source-cambodianess', snippet: 'Port capacity to double with new deep-water berths for larger container ships.' },
-      { title: 'Cambodia-Thailand border trade reaches $5 billion milestone', link: '#', pubDate: new Date(now - 10 * 3600000), source: 'Khmer Times', sourceId: 'khmer-times', sourceColor: 'source-khmer-times', snippet: 'Bilateral trade continues to grow with improved border infrastructure at Poipet.' },
-      { title: 'Phnom Penh launches digital economy initiative', link: '#', pubDate: new Date(now - 12 * 3600000), source: 'Phnom Penh Post', sourceId: 'pp-post', sourceColor: 'source-pp-post', snippet: 'Government aims to create 50,000 tech jobs by 2028.' },
-      { title: 'Mekong River water levels stable despite regional dry season', link: '#', pubDate: new Date(now - 14 * 3600000), source: 'ASEAN Affairs', sourceId: 'asean', sourceColor: 'source-asean', snippet: 'Mekong River Commission reports adequate water flows for agriculture.' },
-      { title: 'Cambodia garment sector sees 15% export increase in Q1', link: '#', pubDate: new Date(now - 16 * 3600000), source: 'Cambodianess', sourceId: 'cambodianess', sourceColor: 'source-cambodianess', snippet: 'European and US buyers increase orders from Cambodian manufacturers.' },
-      { title: 'Angkor Wat visitor numbers surge 30% year-on-year', link: '#', pubDate: new Date(now - 18 * 3600000), source: 'Khmer Times', sourceId: 'khmer-times', sourceColor: 'source-khmer-times', snippet: 'Temple complex sees strongest tourism recovery since 2019.' },
-      { title: 'Cambodia and Vietnam strengthen economic cooperation agreement', link: '#', pubDate: new Date(now - 20 * 3600000), source: 'VOA Cambodia', sourceId: 'voa', sourceColor: 'source-voa', snippet: 'New bilateral agreement focuses on trade corridors and border infrastructure.' },
-      { title: 'ASEAN summit discusses Cambodia role in regional security', link: '#', pubDate: new Date(now - 22 * 3600000), source: 'ASEAN Affairs', sourceId: 'asean', sourceColor: 'source-asean', snippet: 'Cambodia to contribute to maritime security cooperation in South China Sea.' },
-      { title: 'Battambang rice exports reach new highs with improved logistics', link: '#', pubDate: new Date(now - 24 * 3600000), source: 'Phnom Penh Post', sourceId: 'pp-post', sourceColor: 'source-pp-post', snippet: 'Jasmine rice exports to China and EU markets continue to grow.' },
+      { title: 'BREAKING: Hun Manet announces new digital economy initiative', link: '#', pubDate: new Date(now - 3 * 3600000), source: 'Phnom Penh Post', sourceId: 'pp-post', sourceColor: 'source-pp-post', snippet: 'Prime Minister launches comprehensive plan to create 50,000 tech jobs by 2028.' },
+      { title: 'Siem Reap airport sees record passenger numbers in Q1', link: '#', pubDate: new Date(now - 5 * 3600000), source: 'VOA Cambodia', sourceId: 'voa', sourceColor: 'source-voa', snippet: 'New international airport boosts tourism to Angkor Wat significantly.' },
+      { title: 'Cambodia-Thailand border trade reaches $5 billion milestone', link: '#', pubDate: new Date(now - 7 * 3600000), source: 'Cambodianess', sourceId: 'cambodianess', sourceColor: 'source-cambodianess', snippet: 'Bilateral trade grows with improved border infrastructure at Poipet.' },
+      { title: 'ASEAN summit discusses regional security cooperation', link: '#', pubDate: new Date(now - 9 * 3600000), source: 'ASEAN Affairs', sourceId: 'asean', sourceColor: 'source-asean', snippet: 'Cambodia to contribute to maritime security cooperation in South China Sea.' },
+      { title: 'Sihanoukville port expansion project enters phase 2', link: '#', pubDate: new Date(now - 11 * 3600000), source: 'Cambodianess', sourceId: 'cambodianess', sourceColor: 'source-cambodianess', snippet: 'Port capacity to double with new deep-water berths for larger container ships.' },
+      { title: 'FDI inflows to Cambodia increase 15% year-over-year', link: '#', pubDate: new Date(now - 13 * 3600000), source: 'Khmer Times', sourceId: 'khmer-times', sourceColor: 'source-khmer-times', snippet: 'Foreign direct investment growth led by manufacturing and technology sectors.' },
+      { title: 'Cambodia garment sector sees export increase in Q1', link: '#', pubDate: new Date(now - 15 * 3600000), source: 'Reuters', sourceId: 'reuters', sourceColor: 'source-reuters', snippet: 'European and US buyers increase orders from Cambodian manufacturers.' },
+      { title: 'Mekong River water levels raise concern for dry season', link: '#', pubDate: new Date(now - 17 * 3600000), source: 'Al Jazeera', sourceId: 'aljazeera', sourceColor: 'source-aljazeera', snippet: 'Mekong River Commission warns of potential water shortages affecting agriculture.' },
+      { title: 'Angkor Wat visitor numbers surge 30% year-on-year', link: '#', pubDate: new Date(now - 19 * 3600000), source: 'BBC News', sourceId: 'bbc', sourceColor: 'source-bbc', snippet: 'Temple complex sees strongest tourism recovery since 2019.' },
+      { title: 'Cambodia and Vietnam strengthen economic agreement', link: '#', pubDate: new Date(now - 21 * 3600000), source: 'AP News', sourceId: 'ap', sourceColor: 'source-ap', snippet: 'New bilateral agreement focuses on trade corridors and border infrastructure.' },
+      { title: 'Battambang rice exports reach new highs with improved logistics', link: '#', pubDate: new Date(now - 23 * 3600000), source: 'Nikkei Asia', sourceId: 'nikkei', sourceColor: 'source-nikkei', snippet: 'Jasmine rice exports to China and EU markets continue to grow.' },
     ];
   }
 
   // News tab clicks
   document.getElementById('news-tabs').addEventListener('click', function (e) {
     if (e.target.classList.contains('tab')) {
-      document.querySelectorAll('#news-tabs .tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('#news-tabs .tab').forEach(function (t) { t.classList.remove('active'); });
       e.target.classList.add('active');
       currentFeedFilter = e.target.dataset.feed;
       renderNews();
     }
   });
 
-  // Search filtering
   document.getElementById('search-input').addEventListener('input', renderNews);
-
-  // Refresh button
   document.getElementById('news-refresh').addEventListener('click', loadAllNews);
 
-  // Expand button
-  document.getElementById('news-expand').addEventListener('click', function () {
-    document.querySelector('.panel-news').classList.toggle('expanded');
-    this.textContent = document.querySelector('.panel-news').classList.contains('expanded') ? '\u2716' : '\u2750';
-  });
+  // =========================================================
+  // AI INTELLIGENCE BRIEF
+  // =========================================================
+  function generateIntelBrief() {
+    var briefEl = document.getElementById('intel-brief');
+    var timeEl = document.getElementById('intel-time');
+    if (!briefEl) return;
 
-  // ========================
-  // WEATHER (Open-Meteo API - free, no key)
-  // ========================
+    var now = new Date();
+    timeEl.textContent = now.toLocaleString('en-US', {
+      weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
+      hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Phnom_Penh',
+    }) + ' ICT';
+
+    var catCounts = {};
+    var sentCounts = { positive: 0, negative: 0, neutral: 0 };
+    allNewsItems.forEach(function (item) {
+      catCounts[item.category] = (catCounts[item.category] || 0) + 1;
+      sentCounts[item.sentiment]++;
+    });
+
+    var topCat = 'economy';
+    var topCount = 0;
+    Object.keys(catCounts).forEach(function (cat) {
+      if (catCounts[cat] > topCount) { topCount = catCounts[cat]; topCat = cat; }
+    });
+
+    var total = allNewsItems.length || 1;
+    var posP = Math.round(sentCounts.positive / total * 100);
+    var negP = Math.round(sentCounts.negative / total * 100);
+
+    var briefHtml = '';
+    briefHtml += '<div class="brief-item"><span class="brief-icon">&#128202;</span><span class="brief-text">Monitoring <strong>' + allNewsItems.length + '</strong> news items from <strong>' + FEED_SOURCES.length + '</strong> sources across local and international media.</span></div>';
+    briefHtml += '<div class="brief-item"><span class="brief-icon">&#127760;</span><span class="brief-text">Dominant coverage area: <strong>' + topCat.charAt(0).toUpperCase() + topCat.slice(1) + '</strong> (' + topCount + ' articles). Sentiment: ' + posP + '% positive, ' + negP + '% negative.</span></div>';
+
+    if (sentCounts.negative > sentCounts.positive) {
+      briefHtml += '<div class="brief-item"><span class="brief-icon">&#9888;&#65039;</span><span class="brief-text">Elevated negative sentiment detected. Key concerns may include regional security, economic challenges, or environmental risks.</span></div>';
+    } else {
+      briefHtml += '<div class="brief-item"><span class="brief-icon">&#9989;</span><span class="brief-text">Overall positive outlook. Economic growth indicators and diplomatic developments remain favorable.</span></div>';
+    }
+
+    briefHtml += '<div class="brief-item"><span class="brief-icon">&#128161;</span><span class="brief-text">Key topics: ' +
+      Object.keys(catCounts).sort(function (a, b) { return catCounts[b] - catCounts[a]; }).slice(0, 4).map(function (c) {
+        return c.charAt(0).toUpperCase() + c.slice(1) + ' (' + catCounts[c] + ')';
+      }).join(', ') + '</span></div>';
+
+    briefEl.innerHTML = briefHtml;
+  }
+
+  function generateKeyEvents() {
+    var eventEl = document.getElementById('event-list');
+    if (!eventEl) return;
+
+    var topItems = allNewsItems
+      .filter(function (i) { return i.priority === 'high' || i.isBreaking; })
+      .slice(0, 3);
+
+    if (topItems.length === 0) {
+      topItems = allNewsItems.slice(0, 3);
+    }
+
+    var html = '';
+    topItems.forEach(function (item) {
+      var catClass = 'cat-' + (item.category === 'infrastructure' ? 'infra' : item.category);
+      html += '<div class="event-item">' +
+        '<span class="event-cat ' + catClass + '">' + (item.category || 'General').toUpperCase() + '</span>' +
+        '<span class="event-text">' + escapeHtml(item.title) + '</span>' +
+        '</div>';
+    });
+
+    eventEl.innerHTML = html || '<div class="loading-state"><span>No key events</span></div>';
+  }
+
+  // =========================================================
+  // STRATEGIC RISK ASSESSMENT (World Bank Governance Indicators)
+  // =========================================================
+  async function loadStrategicRisk() {
+    var riskGrid = document.getElementById('risk-grid');
+    var riskCompare = document.getElementById('risk-compare');
+    if (!riskGrid) return;
+
+    var wgiIndicators = [
+      { id: 'PV.EST', name: 'Political Stability' },
+      { id: 'GE.EST', name: 'Gov. Effectiveness' },
+      { id: 'RQ.EST', name: 'Regulatory Quality' },
+      { id: 'RL.EST', name: 'Rule of Law' },
+      { id: 'CC.EST', name: 'Control of Corruption' },
+      { id: 'VA.EST', name: 'Voice & Accountability' },
+    ];
+
+    try {
+      var results = await Promise.allSettled(
+        wgiIndicators.map(function (ind) {
+          return fetch('https://api.worldbank.org/v2/country/KHM/indicator/' + ind.id + '?format=json&per_page=10&date=2013:2024')
+            .then(function (r) { return r.json(); });
+        })
+      );
+
+      riskGrid.innerHTML = '';
+      var totalScore = 0;
+      var count = 0;
+
+      results.forEach(function (result, i) {
+        var ind = wgiIndicators[i];
+        var value = null;
+
+        if (result.status === 'fulfilled' && result.value && result.value[1]) {
+          var entries = result.value[1].filter(function (e) { return e.value !== null; });
+          if (entries.length > 0) {
+            value = entries[0].value;
+          }
+        }
+
+        // WGI scores range from -2.5 to 2.5, normalize to 0-100
+        var normalized = value !== null ? Math.round((value + 2.5) / 5 * 100) : 50;
+        var riskLevel = normalized > 60 ? 'low' : normalized > 35 ? 'moderate' : 'high';
+        var barColor = riskLevel === 'low' ? '#10b981' : riskLevel === 'moderate' ? '#f59e0b' : '#ef4444';
+        totalScore += normalized;
+        count++;
+
+        var row = document.createElement('div');
+        row.className = 'risk-row';
+        row.innerHTML =
+          '<span class="risk-name">' + ind.name + '</span>' +
+          '<div class="risk-bar-bg"><div class="risk-bar-fill" style="width:' + normalized + '%;background:' + barColor + '"></div></div>' +
+          '<span class="risk-value risk-' + riskLevel + '">' + normalized + '</span>';
+        riskGrid.appendChild(row);
+      });
+
+      // Update overall risk score
+      var avgScore = count > 0 ? Math.round(totalScore / count) : 50;
+      var overallLevel = avgScore > 60 ? 'LOW' : avgScore > 35 ? 'MODERATE' : 'HIGH';
+      var circleColor = avgScore > 60 ? '#10b981' : avgScore > 35 ? '#f59e0b' : '#ef4444';
+
+      var circle = document.getElementById('risk-circle');
+      var scoreEl = document.getElementById('risk-score');
+      var descEl = document.getElementById('risk-desc');
+      if (circle) circle.style.borderColor = circleColor;
+      if (scoreEl) { scoreEl.textContent = avgScore; scoreEl.style.color = circleColor; }
+      if (descEl) descEl.textContent = 'Overall risk level: ' + overallLevel + '. Based on 6 World Bank Governance Indicators for Cambodia.';
+
+      // Load ASEAN comparison
+      loadASEANComparison(riskCompare);
+
+    } catch (e) {
+      console.warn('Risk data load error:', e);
+      riskGrid.innerHTML = '<div class="loading-state"><span>Risk data unavailable</span></div>';
+    }
+  }
+
+  async function loadASEANComparison(container) {
+    if (!container) return;
+    var countries = [
+      { code: 'KHM', name: 'Cambodia' },
+      { code: 'THA', name: 'Thailand' },
+      { code: 'VNM', name: 'Vietnam' },
+      { code: 'MMR', name: 'Myanmar' },
+      { code: 'LAO', name: 'Laos' },
+    ];
+
+    try {
+      var results = await Promise.allSettled(
+        countries.map(function (c) {
+          return fetch('https://api.worldbank.org/v2/country/' + c.code + '/indicator/PV.EST?format=json&per_page=10&date=2013:2024')
+            .then(function (r) { return r.json(); });
+        })
+      );
+
+      container.innerHTML = '';
+      results.forEach(function (result, i) {
+        var country = countries[i];
+        var value = 0;
+        if (result.status === 'fulfilled' && result.value && result.value[1]) {
+          var entries = result.value[1].filter(function (e) { return e.value !== null; });
+          if (entries.length > 0) value = entries[0].value;
+        }
+        var normalized = Math.round((value + 2.5) / 5 * 100);
+
+        var row = document.createElement('div');
+        row.className = 'compare-row';
+        row.innerHTML =
+          '<span class="compare-country">' + country.name + '</span>' +
+          '<div class="compare-bar-bg"><div class="compare-bar-fill" style="width:' + normalized + '%;' + (country.code === 'KHM' ? 'background:#8b5cf6' : '') + '"></div></div>' +
+          '<span class="compare-score">' + normalized + '</span>';
+        container.appendChild(row);
+      });
+    } catch (e) {
+      container.innerHTML = '<div class="loading-state"><span>Comparison unavailable</span></div>';
+    }
+  }
+
+  // =========================================================
+  // AI ECONOMIC FORECASTING
+  // =========================================================
+  async function loadForecasts() {
+    var forecastGrid = document.getElementById('forecast-grid');
+    if (!forecastGrid) return;
+
+    var indicators = [
+      { id: 'NY.GDP.MKTP.CD', name: 'GDP', format: 'B', unit: 'USD' },
+      { id: 'NY.GDP.PCAP.CD', name: 'GDP per Capita', format: 'K', unit: 'USD' },
+      { id: 'FP.CPI.TOTL.ZG', name: 'Inflation Rate', format: '%', unit: '' },
+      { id: 'NE.EXP.GNFS.CD', name: 'Exports', format: 'B', unit: 'USD' },
+      { id: 'BX.KLT.DINV.CD.WD', name: 'FDI Inflow', format: 'B', unit: 'USD' },
+    ];
+
+    try {
+      var results = await Promise.allSettled(
+        indicators.map(function (ind) {
+          return fetch('https://api.worldbank.org/v2/country/KHM/indicator/' + ind.id + '?format=json&per_page=10&date=2015:2024')
+            .then(function (r) { return r.json(); });
+        })
+      );
+
+      forecastGrid.innerHTML = '';
+      results.forEach(function (result, i) {
+        var ind = indicators[i];
+        var values = [];
+        var years = [];
+
+        if (result.status === 'fulfilled' && result.value && result.value[1]) {
+          var entries = result.value[1].filter(function (e) { return e.value !== null; }).reverse();
+          entries.forEach(function (e) {
+            values.push(e.value);
+            years.push(parseInt(e.date));
+          });
+        }
+
+        if (values.length < 2) {
+          var card = document.createElement('div');
+          card.className = 'forecast-card';
+          card.innerHTML = '<div class="forecast-name">' + ind.name + '</div><div style="font-size:11px;color:#5a6a85;padding:4px 0">Insufficient data</div>';
+          forecastGrid.appendChild(card);
+          return;
+        }
+
+        // Simple linear regression for forecasting
+        var n = values.length;
+        var latestValue = values[n - 1];
+        var latestYear = years[n - 1];
+
+        // Calculate CAGR (Compound Annual Growth Rate) excluding outliers
+        var validGrowths = [];
+        for (var j = 1; j < n; j++) {
+          if (values[j - 1] !== 0) {
+            var g = (values[j] - values[j - 1]) / Math.abs(values[j - 1]);
+            if (g > -0.5 && g < 1) validGrowths.push(g);
+          }
+        }
+        var avgGrowth = validGrowths.length > 0 ? validGrowths.reduce(function (a, b) { return a + b; }, 0) / validGrowths.length : 0;
+
+        // Project 2 years forward
+        var projected = latestValue * Math.pow(1 + avgGrowth, 2);
+        var changePercent = ((projected - latestValue) / Math.abs(latestValue || 1)) * 100;
+
+        // Format values
+        var currentStr = formatIndicatorValue(latestValue, ind.format);
+        var projectedStr = formatIndicatorValue(projected, ind.format);
+        var isUp = projected >= latestValue;
+        var arrowIcon = isUp ? '&#9650;' : '&#9660;';
+        var arrowColor = isUp ? '#10b981' : '#ef4444';
+        var changeColor = isUp ? 'background:rgba(16,185,129,0.15);color:#10b981' : 'background:rgba(239,68,68,0.15);color:#ef4444';
+
+        // Sparkline data (normalize to 0-24 height)
+        var maxVal = Math.max.apply(null, values.concat([projected]));
+        var minVal = Math.min.apply(null, values.concat([projected]));
+        var range = maxVal - minVal || 1;
+        var sparkHtml = '<div class="forecast-sparkline">';
+        values.forEach(function (v) {
+          var h = Math.max(3, Math.round((v - minVal) / range * 24));
+          sparkHtml += '<div class="spark-bar" style="height:' + h + 'px"></div>';
+        });
+        var ph = Math.max(3, Math.round((projected - minVal) / range * 24));
+        sparkHtml += '<div class="spark-bar projected" style="height:' + ph + 'px"></div>';
+        sparkHtml += '</div>';
+
+        var card = document.createElement('div');
+        card.className = 'forecast-card';
+        card.innerHTML =
+          '<div class="forecast-name">' + ind.name + ' (' + latestYear + ' &rarr; ' + (latestYear + 2) + 'F)</div>' +
+          '<div class="forecast-row">' +
+            '<span class="forecast-current">' + (ind.unit ? '<span style="font-size:10px;color:#5a6a85">' + ind.unit + ' </span>' : '') + currentStr + '</span>' +
+            '<span class="forecast-arrow" style="color:' + arrowColor + '">' + arrowIcon + '</span>' +
+            '<span class="forecast-projected" style="color:' + arrowColor + '">' + projectedStr + '</span>' +
+          '</div>' +
+          '<div class="forecast-meta">' +
+            '<span class="forecast-change" style="' + changeColor + '">' + (changePercent >= 0 ? '+' : '') + changePercent.toFixed(1) + '%</span>' +
+            '<span class="forecast-conf">CAGR: ' + (avgGrowth * 100).toFixed(1) + '% | Confidence: ' + getConfidence(validGrowths) + '</span>' +
+          '</div>' +
+          sparkHtml;
+        forecastGrid.appendChild(card);
+      });
+    } catch (e) {
+      console.warn('Forecast load error:', e);
+      forecastGrid.innerHTML = '<div class="loading-state"><span>Forecast unavailable</span></div>';
+    }
+
+    // Load political outlook
+    loadPoliticalOutlook();
+  }
+
+  function formatIndicatorValue(val, format) {
+    if (format === 'B') return (val / 1e9).toFixed(1) + 'B';
+    if (format === 'K') return Math.round(val).toLocaleString();
+    if (format === '%') return val.toFixed(1) + '%';
+    return val.toFixed(1);
+  }
+
+  function getConfidence(growths) {
+    if (growths.length < 3) return 'Low';
+    var mean = growths.reduce(function (a, b) { return a + b; }, 0) / growths.length;
+    var variance = growths.reduce(function (a, b) { return a + Math.pow(b - mean, 2); }, 0) / growths.length;
+    var stdDev = Math.sqrt(variance);
+    if (stdDev < 0.05) return 'High';
+    if (stdDev < 0.15) return 'Medium';
+    return 'Low';
+  }
+
+  function loadPoliticalOutlook() {
+    var outlook = document.getElementById('political-outlook');
+    if (!outlook) return;
+
+    outlook.innerHTML =
+      '<div class="outlook-item">' +
+        '<div class="outlook-label">Government Stability</div>' +
+        '<div class="outlook-text">Cambodia under PM Hun Manet maintains continuity with CPP governance. Diplomatic relations with China, Japan, and ASEAN partners remain the focus of foreign policy.</div>' +
+      '</div>' +
+      '<div class="outlook-item">' +
+        '<div class="outlook-label">Economic Policy Direction</div>' +
+        '<div class="outlook-text">Focus on digital economy transformation, Special Economic Zones expansion, and infrastructure development (new airports, expressways, port upgrades).</div>' +
+      '</div>' +
+      '<div class="outlook-item">' +
+        '<div class="outlook-label">Regional Dynamics</div>' +
+        '<div class="outlook-text">Increasing ASEAN integration, Mekong subregion cooperation, and balancing relations between major powers (US, China, Japan) in the Indo-Pacific.</div>' +
+      '</div>';
+  }
+
+  // =========================================================
+  // WEATHER (Open-Meteo API)
+  // =========================================================
   function getWeatherEmoji(code) {
-    if (code === 0) return '\u2600\uFE0F'; // clear
-    if (code <= 3) return '\u26C5'; // partly cloudy
-    if (code <= 48) return '\uD83C\uDF2B\uFE0F'; // fog
-    if (code <= 57) return '\uD83C\uDF27\uFE0F'; // drizzle
-    if (code <= 67) return '\uD83C\uDF27\uFE0F'; // rain
-    if (code <= 77) return '\u2744\uFE0F'; // snow
-    if (code <= 82) return '\u26C8\uFE0F'; // showers
-    if (code <= 99) return '\u26A1'; // thunderstorm
+    if (code === 0) return '\u2600\uFE0F';
+    if (code <= 3) return '\u26C5';
+    if (code <= 48) return '\uD83C\uDF2B\uFE0F';
+    if (code <= 67) return '\uD83C\uDF27\uFE0F';
+    if (code <= 77) return '\u2744\uFE0F';
+    if (code <= 82) return '\u26C8\uFE0F';
+    if (code <= 99) return '\u26A1';
     return '\uD83C\uDF24\uFE0F';
   }
 
   function getWeatherDesc(code) {
-    if (code === 0) return 'Clear sky';
+    if (code === 0) return 'Clear';
     if (code <= 3) return 'Partly cloudy';
     if (code <= 48) return 'Fog';
-    if (code <= 57) return 'Drizzle';
     if (code <= 67) return 'Rain';
     if (code <= 77) return 'Snow';
     if (code <= 82) return 'Showers';
-    if (code <= 99) return 'Thunderstorm';
+    if (code <= 99) return 'Storm';
     return 'Unknown';
   }
 
   async function loadWeather() {
-    const container = document.getElementById('weather-grid');
-    try {
-      const lats = WEATHER_CITIES.map(c => c.lat).join(',');
-      const lons = WEATHER_CITIES.map(c => c.lon).join(',');
+    var container = document.getElementById('weather-grid');
+    if (!container) return;
 
-      // Fetch each city individually (Open-Meteo doesn't support batch for current weather)
-      const results = await Promise.allSettled(
-        WEATHER_CITIES.map(city =>
-          fetch(
+    try {
+      var results = await Promise.allSettled(
+        WEATHER_CITIES.map(function (city) {
+          return fetch(
             'https://api.open-meteo.com/v1/forecast?latitude=' + city.lat +
             '&longitude=' + city.lon +
             '&current=temperature_2m,relative_humidity_2m,wind_speed_10m,weather_code' +
             '&timezone=Asia/Phnom_Penh'
-          ).then(r => r.json())
-        )
+          ).then(function (r) { return r.json(); });
+        })
       );
 
       container.innerHTML = '';
-      results.forEach((result, i) => {
-        const city = WEATHER_CITIES[i];
-        if (result.status !== 'fulfilled') {
-          console.warn('Weather fetch failed for ' + city.name);
-          return;
-        }
-        const data = result.value;
-        const current = data.current || {};
-        const temp = Math.round(current.temperature_2m || 0);
-        const humidity = current.relative_humidity_2m || 0;
-        const wind = current.wind_speed_10m || 0;
-        const code = current.weather_code || 0;
+      results.forEach(function (result, i) {
+        var city = WEATHER_CITIES[i];
+        if (result.status !== 'fulfilled') return;
+        var data = result.value;
+        var current = data.current || {};
+        var temp = Math.round(current.temperature_2m || 0);
+        var code = current.weather_code || 0;
 
-        const card = document.createElement('div');
-        card.className = 'weather-card';
-        card.innerHTML =
-          '<div class="weather-city">' + city.name + '</div>' +
-          '<div class="weather-icon">' + getWeatherEmoji(code) + '</div>' +
-          '<div class="weather-temp">' + temp + '\u00B0C</div>' +
-          '<div class="weather-details">' +
-            '<div class="weather-detail-row">' + getWeatherDesc(code) + '</div>' +
-            '<div class="weather-detail-row">Humidity: ' + humidity + '%</div>' +
-            '<div class="weather-detail-row">Wind: ' + wind + ' km/h</div>' +
-          '</div>';
-        container.appendChild(card);
+        var row = document.createElement('div');
+        row.className = 'weather-row';
+        row.innerHTML =
+          '<span class="weather-city-name">' + city.name + '</span>' +
+          '<span class="weather-icon-sm">' + getWeatherEmoji(code) + '</span>' +
+          '<span class="weather-temp-sm">' + temp + '\u00B0C</span>' +
+          '<span class="weather-desc-sm">' + getWeatherDesc(code) + '</span>';
+        container.appendChild(row);
       });
+
       if (container.children.length === 0) {
-        container.innerHTML =
-          '<div class="weather-card"><div class="weather-city">Weather unavailable</div></div>';
+        container.innerHTML = '<div style="padding:8px;font-size:11px;color:#5a6a85">Weather unavailable</div>';
       }
     } catch (e) {
-      console.error('Weather load error:', e);
-      container.innerHTML =
-        '<div class="weather-card"><div class="weather-city">Weather unavailable</div></div>';
+      console.error('Weather error:', e);
     }
   }
 
-  document.getElementById('weather-refresh').addEventListener('click', loadWeather);
-
-  // ========================
-  // TIME RANGE SELECTOR
-  // ========================
-  document.querySelectorAll('.time-btn').forEach(btn => {
-    btn.addEventListener('click', function () {
-      document.querySelectorAll('.time-btn').forEach(b => b.classList.remove('active'));
-      this.classList.add('active');
-    });
-  });
-
-  // ========================
-  // ABOUT MODAL
-  // ========================
-  document.getElementById('about-link').addEventListener('click', function (e) {
-    e.preventDefault();
-    document.getElementById('about-modal').classList.add('active');
-  });
-  document.getElementById('modal-close').addEventListener('click', function () {
-    document.getElementById('about-modal').classList.remove('active');
-  });
-  document.getElementById('about-modal').addEventListener('click', function (e) {
-    if (e.target === this) this.classList.remove('active');
-  });
-
-  // ========================
-  // EXCHANGE RATE (free API)
-  // ========================
+  // =========================================================
+  // EXCHANGE RATES (8 currencies, updated hourly)
+  // =========================================================
   async function loadExchangeRates() {
     try {
-      const resp = await fetch('https://open.er-api.com/v6/latest/USD');
+      var resp = await fetch('https://open.er-api.com/v6/latest/USD');
       if (!resp.ok) throw new Error('Exchange rate API failed');
-      const data = await resp.json();
-      if (data.rates) {
-        const khr = data.rates.KHR || 4100;
-        const thb = data.rates.THB || 34;
-        const cny = data.rates.CNY || 7.25;
-        const eur = data.rates.EUR || 0.92;
-        const jpy = data.rates.JPY || 155;
+      var data = await resp.json();
+      if (!data.rates) return;
 
-        document.getElementById('usd-khr').textContent = Math.round(khr).toLocaleString();
-        document.getElementById('thb-khr').textContent = Math.round(khr / thb).toLocaleString();
-        document.getElementById('cny-khr').textContent = Math.round(khr / cny).toLocaleString();
-        var eurEl = document.getElementById('eur-khr');
-        if (eurEl) eurEl.textContent = Math.round(khr / eur).toLocaleString();
-        var jpyEl = document.getElementById('jpy-khr');
-        if (jpyEl) jpyEl.textContent = Math.round(khr / jpy).toLocaleString();
+      var khr = data.rates.KHR || 4100;
+      var pairs = [
+        { el: 'tick-usd', rate: khr, pair: 'USD/KHR' },
+        { el: 'tick-thb', rate: khr / (data.rates.THB || 34), pair: 'THB/KHR' },
+        { el: 'tick-cny', rate: khr / (data.rates.CNY || 7.25), pair: 'CNY/KHR' },
+        { el: 'tick-eur', rate: khr / (data.rates.EUR || 0.92), pair: 'EUR/KHR' },
+        { el: 'tick-jpy', rate: khr / (data.rates.JPY || 155), pair: 'JPY/KHR' },
+        { el: 'tick-krw', rate: khr / (data.rates.KRW || 1350), pair: 'KRW/KHR' },
+        { el: 'tick-sgd', rate: khr / (data.rates.SGD || 1.35), pair: 'SGD/KHR' },
+        { el: 'tick-aud', rate: khr / (data.rates.AUD || 1.55), pair: 'AUD/KHR' },
+      ];
 
-        document.querySelectorAll('.rate-change').forEach(el => {
-          el.classList.remove('neutral');
-          el.classList.add('neutral');
-          el.textContent = '--';
-        });
+      pairs.forEach(function (p) {
+        var el = document.getElementById(p.el);
+        if (el) {
+          el.innerHTML = p.pair + ' <strong>' + Math.round(p.rate).toLocaleString() + '</strong> <span class="tick-change neutral">--</span>';
+        }
+      });
+
+      var updateEl = document.getElementById('ticker-update');
+      if (updateEl) {
+        updateEl.textContent = 'Updated: ' + new Date().toLocaleTimeString('en-US', {
+          hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Phnom_Penh',
+        }) + ' ICT';
       }
     } catch (e) {
       console.warn('Exchange rate fetch failed:', e.message);
     }
   }
 
-  // ========================
-  // ECONOMIC INDICATORS (World Bank free API)
-  // ========================
+  // =========================================================
+  // ECONOMIC INDICATORS (World Bank)
+  // =========================================================
   async function loadEconomicData() {
     var ecoGrid = document.getElementById('eco-indicators');
     if (!ecoGrid) return;
 
     var indicators = [
       { id: 'NY.GDP.MKTP.CD', name: 'GDP', format: 'B', unit: 'USD' },
-      { id: 'NY.GDP.PCAP.CD', name: 'GDP per Capita', format: 'K', unit: 'USD' },
+      { id: 'NY.GDP.PCAP.CD', name: 'GDP/Capita', format: 'K', unit: 'USD' },
       { id: 'FP.CPI.TOTL.ZG', name: 'Inflation', format: '%', unit: '' },
       { id: 'NE.EXP.GNFS.CD', name: 'Exports', format: 'B', unit: 'USD' },
       { id: 'BX.KLT.DINV.CD.WD', name: 'FDI Inflow', format: 'B', unit: 'USD' },
@@ -650,32 +1132,28 @@
     ];
 
     var results = await Promise.allSettled(
-      indicators.map(ind =>
-        fetch('https://api.worldbank.org/v2/country/KHM/indicator/' + ind.id + '?format=json&per_page=5&date=2019:2024')
-          .then(r => r.json())
-      )
+      indicators.map(function (ind) {
+        return fetch('https://api.worldbank.org/v2/country/KHM/indicator/' + ind.id + '?format=json&per_page=5&date=2019:2024')
+          .then(function (r) { return r.json(); });
+      })
     );
 
     ecoGrid.innerHTML = '';
-    results.forEach((result, i) => {
+    results.forEach(function (result, i) {
       var ind = indicators[i];
       var value = '--';
       var year = '';
       var trend = 'neutral';
 
       if (result.status === 'fulfilled' && result.value && result.value[1]) {
-        var entries = result.value[1].filter(e => e.value !== null);
+        var entries = result.value[1].filter(function (e) { return e.value !== null; });
         if (entries.length > 0) {
           var latest = entries[0];
           year = latest.date;
           var raw = latest.value;
-          if (ind.format === 'B') {
-            value = (raw / 1e9).toFixed(1) + 'B';
-          } else if (ind.format === 'K') {
-            value = Math.round(raw).toLocaleString();
-          } else if (ind.format === '%') {
-            value = raw.toFixed(1) + '%';
-          }
+          if (ind.format === 'B') value = (raw / 1e9).toFixed(1) + 'B';
+          else if (ind.format === 'K') value = Math.round(raw).toLocaleString();
+          else if (ind.format === '%') value = raw.toFixed(1) + '%';
           if (entries.length > 1 && entries[1].value !== null) {
             trend = raw > entries[1].value ? 'up' : raw < entries[1].value ? 'down' : 'neutral';
           }
@@ -692,9 +1170,9 @@
     });
   }
 
-  // ========================
+  // =========================================================
   // COUNTRY STATISTICS
-  // ========================
+  // =========================================================
   async function loadCountryStats() {
     var statsGrid = document.getElementById('country-stats');
     if (!statsGrid) return;
@@ -706,36 +1184,32 @@
       { id: 'SE.ADT.LITR.ZS', name: 'Literacy Rate', format: '%' },
       { id: 'SP.URB.TOTL.IN.ZS', name: 'Urbanization', format: '%' },
       { id: 'IT.NET.USER.ZS', name: 'Internet Users', format: '%' },
-      { id: 'SH.XPD.CHEX.GD.ZS', name: 'Health Spending (% GDP)', format: '%' },
-      { id: 'SE.XPD.TOTL.GD.ZS', name: 'Education Spending (% GDP)', format: '%' },
+      { id: 'SH.XPD.CHEX.GD.ZS', name: 'Health (% GDP)', format: '%' },
+      { id: 'SE.XPD.TOTL.GD.ZS', name: 'Education (% GDP)', format: '%' },
     ];
 
     var results = await Promise.allSettled(
-      statIndicators.map(ind =>
-        fetch('https://api.worldbank.org/v2/country/KHM/indicator/' + ind.id + '?format=json&per_page=5&date=2019:2024')
-          .then(r => r.json())
-      )
+      statIndicators.map(function (ind) {
+        return fetch('https://api.worldbank.org/v2/country/KHM/indicator/' + ind.id + '?format=json&per_page=5&date=2019:2024')
+          .then(function (r) { return r.json(); });
+      })
     );
 
     statsGrid.innerHTML = '';
-    results.forEach((result, i) => {
+    results.forEach(function (result, i) {
       var ind = statIndicators[i];
       var value = '--';
       var year = '';
 
       if (result.status === 'fulfilled' && result.value && result.value[1]) {
-        var entries = result.value[1].filter(e => e.value !== null);
+        var entries = result.value[1].filter(function (e) { return e.value !== null; });
         if (entries.length > 0) {
           var latest = entries[0];
           year = latest.date;
           var raw = latest.value;
-          if (ind.format === 'M') {
-            value = (raw / 1e6).toFixed(1) + 'M';
-          } else if (ind.format === '%') {
-            value = raw.toFixed(1) + '%';
-          } else if (ind.format === 'yr') {
-            value = raw.toFixed(1) + ' yrs';
-          }
+          if (ind.format === 'M') value = (raw / 1e6).toFixed(1) + 'M';
+          else if (ind.format === '%') value = raw.toFixed(1) + '%';
+          else if (ind.format === 'yr') value = raw.toFixed(1) + ' yrs';
         }
       }
 
@@ -749,20 +1223,82 @@
     });
   }
 
-  // ========================
+  // =========================================================
+  // RIGHT PANEL TAB SWITCHING
+  // =========================================================
+  document.getElementById('right-tabs').addEventListener('click', function (e) {
+    if (e.target.classList.contains('rtab')) {
+      document.querySelectorAll('#right-tabs .rtab').forEach(function (t) { t.classList.remove('active'); });
+      e.target.classList.add('active');
+      var tab = e.target.dataset.rtab;
+      ['intel', 'risk', 'forecast', 'data'].forEach(function (t) {
+        var el = document.getElementById('rtab-' + t);
+        if (el) el.style.display = t === tab ? '' : 'none';
+      });
+    }
+  });
+
+  // =========================================================
+  // PANEL COLLAPSE
+  // =========================================================
+  document.getElementById('left-collapse').addEventListener('click', function () {
+    document.getElementById('left-panel').classList.toggle('collapsed');
+    this.textContent = document.getElementById('left-panel').classList.contains('collapsed') ? '\u25B6' : '\u25C0';
+    // Resize globe/map
+    setTimeout(function () {
+      if (globe && is3D) {
+        var c = document.getElementById('globe-container');
+        globe.width(c.clientWidth).height(c.clientHeight);
+      }
+      if (leafletMap && !is3D) leafletMap.invalidateSize();
+    }, 350);
+  });
+
+  document.getElementById('right-collapse').addEventListener('click', function () {
+    document.getElementById('right-panel').classList.toggle('collapsed');
+    this.textContent = document.getElementById('right-panel').classList.contains('collapsed') ? '\u25C0' : '\u25B6';
+    setTimeout(function () {
+      if (globe && is3D) {
+        var c = document.getElementById('globe-container');
+        globe.width(c.clientWidth).height(c.clientHeight);
+      }
+      if (leafletMap && !is3D) leafletMap.invalidateSize();
+    }, 350);
+  });
+
+  // =========================================================
+  // ABOUT MODAL
+  // =========================================================
+  document.getElementById('about-link').addEventListener('click', function (e) {
+    e.preventDefault();
+    document.getElementById('about-modal').classList.add('active');
+  });
+  document.getElementById('modal-close').addEventListener('click', function () {
+    document.getElementById('about-modal').classList.remove('active');
+  });
+  document.getElementById('about-modal').addEventListener('click', function (e) {
+    if (e.target === this) this.classList.remove('active');
+  });
+
+  // =========================================================
   // INITIALIZE
-  // ========================
+  // =========================================================
+  initGlobe();
   loadAllNews();
   loadWeather();
   loadExchangeRates();
   loadEconomicData();
   loadCountryStats();
+  loadStrategicRisk();
+  loadForecasts();
 
-  // Auto-refresh
-  setInterval(loadAllNews, 5 * 60 * 1000); // 5 minutes
-  setInterval(loadWeather, 15 * 60 * 1000); // 15 minutes
-  setInterval(loadExchangeRates, 30 * 60 * 1000); // 30 minutes
-  setInterval(loadEconomicData, 60 * 60 * 1000); // 1 hour
-  setInterval(loadCountryStats, 60 * 60 * 1000); // 1 hour
+  // Auto-refresh intervals
+  setInterval(loadAllNews, 5 * 60 * 1000);       // 5 minutes
+  setInterval(loadWeather, 15 * 60 * 1000);       // 15 minutes
+  setInterval(loadExchangeRates, 60 * 60 * 1000); // 1 hour
+  setInterval(loadEconomicData, 60 * 60 * 1000);  // 1 hour
+  setInterval(loadCountryStats, 60 * 60 * 1000);  // 1 hour
+  setInterval(loadStrategicRisk, 60 * 60 * 1000); // 1 hour
+  setInterval(loadForecasts, 60 * 60 * 1000);     // 1 hour
 
 })();
