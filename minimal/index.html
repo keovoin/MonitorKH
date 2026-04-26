@@ -13,7 +13,7 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 </head>
 <body>
-  <!-- Top Bar -->
+  <!-- Top Bar (sticky) -->
   <header class="top-bar">
     <div class="top-bar-left">
       <div class="logo">
@@ -29,7 +29,7 @@
       </div>
     </div>
     <div class="top-bar-center">
-      <div class="top-clock" id="top-clock">SAT, 25 APR 2026 17:45:00 ICT</div>
+      <div class="top-clock" id="top-clock">--</div>
     </div>
     <div class="top-bar-right">
       <div class="search-box">
@@ -39,13 +39,14 @@
       <button class="map-toggle-btn" id="map-toggle" title="Toggle 2D/3D Map">
         <span id="map-toggle-label">3D</span>
       </button>
-      <div class="theme-toggle" id="theme-toggle" title="Toggle theme">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      <div class="theme-toggle" id="theme-toggle" title="Toggle light/dark mode">
+        <svg class="icon-moon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        <svg class="icon-sun" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
       </div>
     </div>
   </header>
 
-  <!-- Exchange Rate Ticker -->
+  <!-- Exchange Rate Ticker (sticky) -->
   <div class="ticker-bar">
     <div class="ticker-label">FX RATES</div>
     <div class="ticker-track" id="ticker-track">
@@ -62,41 +63,32 @@
     </div>
   </div>
 
-  <!-- Main Layout -->
-  <div class="main-layout">
-    <!-- Left Panel: AI News Feed -->
-    <div class="left-panel" id="left-panel">
-      <div class="panel-header">
-        <div class="panel-title">
-          <span class="ai-badge">AI</span>
-          <span>NEWS INTELLIGENCE</span>
-          <span class="item-count" id="news-total">0</span>
-        </div>
-        <div class="panel-actions">
-          <button class="panel-btn" id="news-refresh" title="Refresh">&#8635;</button>
-          <button class="panel-btn" id="left-collapse" title="Collapse">&#9664;</button>
-        </div>
-      </div>
-      <div class="news-tabs" id="news-tabs">
-        <button class="tab active" data-feed="all">ALL</button>
-        <button class="tab" data-feed="breaking">BREAKING</button>
-        <button class="tab" data-feed="politics">POLITICS</button>
-        <button class="tab" data-feed="economy">ECONOMY</button>
-        <button class="tab" data-feed="security">SECURITY</button>
-        <button class="tab" data-feed="trade">TRADE</button>
-      </div>
-      <div class="news-feed" id="news-feed">
-        <div class="loading-state"><div class="spinner"></div><span>AI analyzing feeds...</span></div>
-      </div>
-    </div>
+  <!-- SCROLLABLE PAGE CONTENT -->
+  <main class="page-content">
 
-    <!-- Center: Map Area -->
-    <div class="center-area">
+    <!-- SECTION 1: Map Area -->
+    <section class="map-section">
       <!-- 3D Globe -->
       <div class="globe-wrapper" id="globe-wrapper">
         <div id="globe-container"></div>
         <div class="globe-overlay-top">
           <div class="situation-label">CAMBODIA INTELLIGENCE</div>
+        </div>
+        <!-- Globe Layer Toggles -->
+        <div class="globe-layers-panel" id="globe-layers-panel">
+          <div class="glp-title">MAP LAYERS</div>
+          <button class="globe-layer-btn active" data-glayer="flights">
+            <span class="glb-icon">&#9992;</span> Flights <span class="glb-count" id="gs-flights">18</span>
+          </button>
+          <button class="globe-layer-btn active" data-glayer="shipping">
+            <span class="glb-icon">&#128674;</span> Shipping <span class="glb-count" id="gs-shipping">8</span>
+          </button>
+          <button class="globe-layer-btn active" data-glayer="cables">
+            <span class="glb-icon">&#128268;</span> Cables <span class="glb-count" id="gs-cables">4</span>
+          </button>
+          <button class="globe-layer-btn active" data-glayer="locations">
+            <span class="glb-icon">&#128205;</span> Locations
+          </button>
         </div>
         <div class="globe-overlay-bottom">
           <div class="globe-stats" id="globe-stats">
@@ -104,6 +96,16 @@
             <span class="gstat"><strong id="gs-sources">10</strong> News Sources</span>
             <span class="gstat"><strong id="gs-risk">--</strong> Risk Level</span>
           </div>
+        </div>
+        <!-- Globe Legend -->
+        <div class="globe-legend">
+          <span class="gl-item"><span class="gl-line" style="background:rgba(59,130,246,0.9)"></span> Flight Routes</span>
+          <span class="gl-item"><span class="gl-line" style="background:rgba(16,185,129,0.9)"></span> Shipping Lanes</span>
+          <span class="gl-item"><span class="gl-line" style="background:#06b6d4"></span> Submarine Cables</span>
+          <span class="gl-item"><span class="gl-dot" style="background:#ef4444"></span> Capital</span>
+          <span class="gl-item"><span class="gl-dot" style="background:#3b82f6"></span> Airport</span>
+          <span class="gl-item"><span class="gl-dot" style="background:#10b981"></span> Port/SEZ</span>
+          <span class="gl-item"><span class="gl-dot" style="background:#8b5cf6"></span> Border</span>
         </div>
       </div>
 
@@ -126,128 +128,177 @@
             <label class="layer-item"><input type="checkbox" data-layer="waterways"><span class="layer-dot" style="background:#06b6d4"></span> Waterways</label>
           </div>
         </div>
-        <div class="map-legend">
-          <span>LEGEND</span>
-          <span class="legend-item"><span class="legend-dot" style="background:#ef4444"></span> Capital</span>
-          <span class="legend-item"><span class="legend-dot" style="background:#f59e0b"></span> City</span>
-          <span class="legend-item"><span class="legend-dot" style="background:#10b981"></span> SEZ</span>
-          <span class="legend-item"><span class="legend-dot" style="background:#8b5cf6"></span> Border</span>
-          <span class="legend-item"><span class="legend-dot" style="background:#3b82f6"></span> Airport</span>
-        </div>
       </div>
-    </div>
+    </section>
 
-    <!-- Right Panel: Intelligence Tabs -->
-    <div class="right-panel" id="right-panel">
-      <div class="panel-header">
-        <div class="panel-title">
-          <span class="ai-badge">AI</span>
-          <span>INTELLIGENCE</span>
-        </div>
-        <div class="panel-actions">
-          <button class="panel-btn" id="right-collapse" title="Collapse">&#9654;</button>
-        </div>
-      </div>
-      <div class="right-tabs" id="right-tabs">
-        <button class="rtab active" data-rtab="intel">BRIEF</button>
-        <button class="rtab" data-rtab="risk">RISK</button>
-        <button class="rtab" data-rtab="forecast">FORECAST</button>
-        <button class="rtab" data-rtab="data">DATA</button>
-      </div>
-
-      <!-- Intel Tab -->
-      <div class="right-content" id="rtab-intel">
-        <div class="intel-section">
-          <div class="intel-header">Daily Intelligence Brief</div>
-          <div class="intel-timestamp" id="intel-time">--</div>
-          <div class="intel-body" id="intel-brief">
-            <div class="loading-state"><div class="spinner"></div><span>Generating brief...</span></div>
+    <!-- SECTION 2: AI News Intelligence + Daily Brief (side by side) -->
+    <section class="content-grid grid-2col">
+      <!-- AI News Feed -->
+      <div class="card-section" id="news-section">
+        <div class="card-header">
+          <div class="card-title">
+            <span class="ai-badge">AI</span>
+            <span>NEWS INTELLIGENCE</span>
+            <span class="item-count" id="news-total">0</span>
           </div>
+          <button class="card-btn" id="news-refresh" title="Refresh">&#8635;</button>
         </div>
-        <div class="intel-section">
-          <div class="intel-header">Key Events</div>
-          <div class="event-list" id="event-list">
-            <div class="loading-state"><div class="spinner"></div><span>Analyzing events...</span></div>
-          </div>
+        <div class="news-tabs" id="news-tabs">
+          <button class="tab active" data-feed="all">ALL</button>
+          <button class="tab" data-feed="breaking">BREAKING</button>
+          <button class="tab" data-feed="politics">POLITICS</button>
+          <button class="tab" data-feed="economy">ECONOMY</button>
+          <button class="tab" data-feed="security">SECURITY</button>
+          <button class="tab" data-feed="trade">TRADE</button>
         </div>
-        <div class="intel-section">
-          <div class="intel-header">Sentiment Analysis</div>
-          <div class="sentiment-bar" id="sentiment-bar">
-            <div class="sbar-fill sbar-pos" id="sbar-pos" style="width:33%"></div>
-            <div class="sbar-fill sbar-neu" id="sbar-neu" style="width:34%"></div>
-            <div class="sbar-fill sbar-neg" id="sbar-neg" style="width:33%"></div>
-          </div>
-          <div class="sentiment-labels">
-            <span class="slabel slabel-pos" id="slabel-pos">Positive 33%</span>
-            <span class="slabel slabel-neu" id="slabel-neu">Neutral 34%</span>
-            <span class="slabel slabel-neg" id="slabel-neg">Negative 33%</span>
-          </div>
+        <div class="news-feed" id="news-feed">
+          <div class="loading-state"><div class="spinner"></div><span>AI analyzing feeds...</span></div>
         </div>
       </div>
 
-      <!-- Risk Tab -->
-      <div class="right-content" id="rtab-risk" style="display:none">
-        <div class="risk-header-section">
-          <div class="risk-overall" id="risk-overall">
-            <div class="risk-score-circle" id="risk-circle">
-              <span class="risk-score-value" id="risk-score">--</span>
-              <span class="risk-score-label">RISK</span>
+      <!-- Intelligence Brief -->
+      <div class="card-section" id="intel-section">
+        <div class="card-header">
+          <div class="card-title">
+            <span class="ai-badge">AI</span>
+            <span>INTELLIGENCE BRIEF</span>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="intel-sub-section">
+            <div class="intel-header">Daily Intelligence Brief</div>
+            <div class="intel-timestamp" id="intel-time">--</div>
+            <div class="intel-body" id="intel-brief">
+              <div class="loading-state"><div class="spinner"></div><span>Generating brief...</span></div>
             </div>
-            <div class="risk-desc" id="risk-desc">Calculating...</div>
+          </div>
+          <div class="intel-sub-section">
+            <div class="intel-header">Key Events</div>
+            <div class="event-list" id="event-list">
+              <div class="loading-state"><div class="spinner"></div><span>Analyzing events...</span></div>
+            </div>
+          </div>
+          <div class="intel-sub-section">
+            <div class="intel-header">Sentiment Analysis</div>
+            <div class="sentiment-bar" id="sentiment-bar">
+              <div class="sbar-fill sbar-pos" id="sbar-pos" style="width:33%"></div>
+              <div class="sbar-fill sbar-neu" id="sbar-neu" style="width:34%"></div>
+              <div class="sbar-fill sbar-neg" id="sbar-neg" style="width:33%"></div>
+            </div>
+            <div class="sentiment-labels">
+              <span class="slabel slabel-pos" id="slabel-pos">Positive 33%</span>
+              <span class="slabel slabel-neu" id="slabel-neu">Neutral 34%</span>
+              <span class="slabel slabel-neg" id="slabel-neg">Negative 33%</span>
+            </div>
           </div>
         </div>
-        <div class="intel-section">
-          <div class="intel-header">Strategic Risk Indicators</div>
-          <div class="risk-grid" id="risk-grid">
-            <div class="loading-state"><div class="spinner"></div><span>Loading risk data...</span></div>
+      </div>
+    </section>
+
+    <!-- SECTION 3: Strategic Risk + Forecast (side by side) -->
+    <section class="content-grid grid-2col">
+      <!-- Strategic Risk -->
+      <div class="card-section" id="risk-section">
+        <div class="card-header">
+          <div class="card-title">
+            <span class="ai-badge">AI</span>
+            <span>STRATEGIC RISK OVERVIEW</span>
           </div>
         </div>
-        <div class="intel-section">
-          <div class="intel-header">Regional Comparison (ASEAN)</div>
-          <div class="risk-compare" id="risk-compare">
-            <div class="loading-state"><div class="spinner"></div><span>Loading...</span></div>
+        <div class="card-body">
+          <div class="risk-header-block">
+            <div class="risk-overall">
+              <div class="risk-score-circle" id="risk-circle">
+                <span class="risk-score-value" id="risk-score">--</span>
+                <span class="risk-score-label">RISK</span>
+              </div>
+              <div class="risk-desc" id="risk-desc">Calculating...</div>
+            </div>
+          </div>
+          <div class="intel-sub-section">
+            <div class="intel-header">Strategic Risk Indicators</div>
+            <div class="risk-grid" id="risk-grid">
+              <div class="loading-state"><div class="spinner"></div><span>Loading risk data...</span></div>
+            </div>
+          </div>
+          <div class="intel-sub-section">
+            <div class="intel-header">Regional Comparison (ASEAN)</div>
+            <div class="risk-compare" id="risk-compare">
+              <div class="loading-state"><div class="spinner"></div><span>Loading...</span></div>
+            </div>
           </div>
         </div>
       </div>
 
-      <!-- Forecast Tab -->
-      <div class="right-content" id="rtab-forecast" style="display:none">
-        <div class="intel-section">
-          <div class="intel-header">AI Economic Forecast</div>
-          <div class="forecast-grid" id="forecast-grid">
-            <div class="loading-state"><div class="spinner"></div><span>Computing forecasts...</span></div>
+      <!-- AI Forecast -->
+      <div class="card-section" id="forecast-section">
+        <div class="card-header">
+          <div class="card-title">
+            <span class="ai-badge">AI</span>
+            <span>ECONOMIC FORECAST</span>
           </div>
         </div>
-        <div class="intel-section">
-          <div class="intel-header">Political Outlook</div>
-          <div class="outlook-body" id="political-outlook">
-            <div class="loading-state"><div class="spinner"></div><span>Analyzing...</span></div>
+        <div class="card-body">
+          <div class="intel-sub-section">
+            <div class="intel-header">AI Economic Forecast</div>
+            <div class="forecast-grid" id="forecast-grid">
+              <div class="loading-state"><div class="spinner"></div><span>Computing forecasts...</span></div>
+            </div>
+          </div>
+          <div class="intel-sub-section">
+            <div class="intel-header">Political Outlook</div>
+            <div class="outlook-body" id="political-outlook">
+              <div class="loading-state"><div class="spinner"></div><span>Analyzing...</span></div>
+            </div>
           </div>
         </div>
       </div>
+    </section>
 
-      <!-- Data Tab -->
-      <div class="right-content" id="rtab-data" style="display:none">
-        <div class="intel-section">
-          <div class="intel-header">Weather &amp; Environment</div>
+    <!-- SECTION 4: Data (Weather, Economic, Country Stats, Sectors) -->
+    <section class="content-grid grid-3col">
+      <!-- Weather + Economic Indicators -->
+      <div class="card-section">
+        <div class="card-header">
+          <div class="card-title"><span>WEATHER &amp; ENVIRONMENT</span></div>
+        </div>
+        <div class="card-body">
           <div class="weather-compact" id="weather-grid">
             <div class="loading-state"><div class="spinner"></div><span>Loading...</span></div>
           </div>
         </div>
-        <div class="intel-section">
-          <div class="intel-header">Economic Indicators <span class="data-source">World Bank</span></div>
+      </div>
+
+      <div class="card-section">
+        <div class="card-header">
+          <div class="card-title"><span>ECONOMIC INDICATORS</span> <span class="data-source">World Bank</span></div>
+        </div>
+        <div class="card-body">
           <div class="eco-grid" id="eco-indicators">
             <div class="loading-state"><div class="spinner"></div><span>Loading...</span></div>
           </div>
         </div>
-        <div class="intel-section">
-          <div class="intel-header">Country Statistics <span class="data-source">World Bank</span></div>
+      </div>
+
+      <div class="card-section">
+        <div class="card-header">
+          <div class="card-title"><span>COUNTRY STATISTICS</span> <span class="data-source">World Bank</span></div>
+        </div>
+        <div class="card-body">
           <div class="cstat-grid" id="country-stats">
             <div class="loading-state"><div class="spinner"></div><span>Loading...</span></div>
           </div>
         </div>
-        <div class="intel-section">
-          <div class="intel-header">Key Info</div>
+      </div>
+    </section>
+
+    <!-- SECTION 5: Key Info + Sectors + Borders -->
+    <section class="content-grid grid-3col">
+      <div class="card-section">
+        <div class="card-header">
+          <div class="card-title"><span>KEY INFO</span></div>
+        </div>
+        <div class="card-body">
           <div class="stat-grid">
             <div class="stat-card"><div class="stat-label">Capital</div><div class="stat-value">Phnom Penh</div></div>
             <div class="stat-card"><div class="stat-label">Prime Minister</div><div class="stat-value">Hun Manet</div></div>
@@ -255,8 +306,13 @@
             <div class="stat-card"><div class="stat-label">Currency</div><div class="stat-value">KHR / USD</div></div>
           </div>
         </div>
-        <div class="intel-section">
-          <div class="intel-header">Key Sectors Monitor</div>
+      </div>
+
+      <div class="card-section">
+        <div class="card-header">
+          <div class="card-title"><span>KEY SECTORS MONITOR</span></div>
+        </div>
+        <div class="card-body">
           <div class="sector-list">
             <div class="sector-row"><span class="sector-icon">&#127981;</span><span class="sector-name">Tourism</span><span class="sector-status status-good">Active</span></div>
             <div class="sector-row"><span class="sector-icon">&#127983;</span><span class="sector-name">Construction</span><span class="sector-status status-good">Growing</span></div>
@@ -268,8 +324,13 @@
             <div class="sector-row"><span class="sector-icon">&#128176;</span><span class="sector-name">Banking &amp; Finance</span><span class="sector-status status-good">Stable</span></div>
           </div>
         </div>
-        <div class="intel-section">
-          <div class="intel-header">Border Status</div>
+      </div>
+
+      <div class="card-section">
+        <div class="card-header">
+          <div class="card-title"><span>BORDER STATUS</span></div>
+        </div>
+        <div class="card-body">
           <div class="border-list">
             <div class="border-row"><span class="border-flag">&#127481;&#127469;</span><span class="border-name">Cambodia-Thailand</span><span class="border-status status-good">Open</span></div>
             <div class="border-row"><span class="border-flag">&#127483;&#127475;</span><span class="border-name">Cambodia-Vietnam</span><span class="border-status status-good">Open</span></div>
@@ -277,8 +338,9 @@
           </div>
         </div>
       </div>
-    </div>
-  </div>
+    </section>
+
+  </main>
 
   <!-- Footer -->
   <footer class="footer-bar">
@@ -301,16 +363,16 @@
         <button class="modal-close" id="modal-close">&times;</button>
       </div>
       <div class="modal-body">
-        <p>Cambodia Monitor v3.0 is an AI-powered intelligence dashboard focused on Cambodia. It features a 3D globe, AI news analysis, economic forecasting, strategic risk assessment, and real-time data aggregation.</p>
+        <p>Cambodia Monitor v3.0 is an AI-powered intelligence dashboard focused on Cambodia.</p>
         <br>
+        <p><strong>3D Globe:</strong> Interactive globe showing flight routes, shipping lanes, submarine internet cables, and key infrastructure pins for Cambodia.</p>
         <p><strong>AI Features:</strong> Sentiment analysis, auto-categorization, intelligence briefings, economic forecasting, strategic risk scoring</p>
-        <p><strong>3D Globe:</strong> Globe.gl with Cambodia markers and trade route arcs</p>
         <p><strong>News Sources:</strong> Khmer Times, PP Post, VOA, Cambodianess, Reuters, Al Jazeera, BBC, AP, Nikkei Asia</p>
         <p><strong>Economic Data:</strong> World Bank API (GDP, inflation, FDI, governance indicators)</p>
         <p><strong>Weather:</strong> Open-Meteo API (4 cities, real-time)</p>
-        <p><strong>Exchange Rates:</strong> 8 currency pairs updated hourly (open.er-api.com)</p>
+        <p><strong>Exchange Rates:</strong> 8 currency pairs updated hourly</p>
         <br>
-        <p>All APIs are free and require no keys. Built with Globe.gl, Leaflet.js, and AI-powered analytics.</p>
+        <p>All APIs are free and require no keys.</p>
       </div>
     </div>
   </div>
