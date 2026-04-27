@@ -617,6 +617,7 @@
   // NEWS FETCHING WITH AI ENRICHMENT
   // =========================================================
   var allNewsItems = [];
+  var cachedGDELTItems = [];
   var currentFeedFilter = 'all';
 
   async function fetchRSS(source) {
@@ -826,6 +827,13 @@
 
     if (allNewsItems.length === 0) {
       allNewsItems = getFallbackNews().map(aiEnrichItem);
+    }
+
+    // Re-merge cached GDELT items so they survive RSS refresh cycles
+    if (cachedGDELTItems.length > 0) {
+      cachedGDELTItems.forEach(function (item) { allNewsItems.push(item); });
+      var srcEl = document.getElementById('gs-sources');
+      if (srcEl) srcEl.textContent = FEED_SOURCES.length + '+GDELT';
     }
 
     renderNews();
@@ -1501,6 +1509,7 @@
 
   function addGDELTToNewsFeed(articles) {
     var added = 0;
+    cachedGDELTItems = [];
     articles.forEach(function (article) {
       if (added >= 10) return;
       var title = article.title || '';
@@ -1523,7 +1532,9 @@
         sourceColor: 'source-gdelt',
         snippet: (article.sourcecountry || '') + ' | ' + (article.language || '') + ' | ' + (article.domain || ''),
       };
-      allNewsItems.push(aiEnrichItem(item));
+      var enriched = aiEnrichItem(item);
+      cachedGDELTItems.push(enriched);
+      allNewsItems.push(enriched);
       added++;
     });
 
@@ -1585,6 +1596,8 @@
           '<span>Positive &#9650; / Negative &#9660;</span>' +
           '<span>' + (lastDate.length >= 8 ? lastDate.slice(4, 6) + '/' + lastDate.slice(6, 8) : '') + '</span>';
       }
+      var oldLabels = container.parentNode.querySelector('.gdelt-tone-labels');
+      if (oldLabels) oldLabels.remove();
       container.parentNode.appendChild(labels);
 
     } catch (e) {
