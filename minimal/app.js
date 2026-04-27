@@ -1460,6 +1460,7 @@
 
       if (!data.articles || data.articles.length === 0) {
         container.innerHTML = '<div class="loading-state"><span>No global articles found</span></div>';
+        cachedGDELTItems = [];
         return;
       }
 
@@ -1558,6 +1559,8 @@
       var data = await resp.json();
 
       if (!data.timeline || !data.timeline[0] || !data.timeline[0].data) {
+        var oldLabels = container.parentNode.querySelector('.gdelt-tone-labels');
+        if (oldLabels) oldLabels.remove();
         container.innerHTML = '<div class="loading-state"><span>Tone data unavailable</span></div>';
         return;
       }
@@ -1603,6 +1606,8 @@
 
     } catch (e) {
       console.warn('GDELT tone error:', e);
+      var oldLabels = container.parentNode.querySelector('.gdelt-tone-labels');
+      if (oldLabels) oldLabels.remove();
       container.innerHTML = '<div class="loading-state"><span>Tone chart unavailable</span></div>';
     }
   }
