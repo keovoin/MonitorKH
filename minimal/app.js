@@ -1510,6 +1510,7 @@
   function addGDELTToNewsFeed(articles) {
     var added = 0;
     cachedGDELTItems = [];
+    allNewsItems = allNewsItems.filter(function (i) { return i.sourceId !== 'gdelt'; });
     articles.forEach(function (article) {
       if (added >= 10) return;
       var title = article.title || '';
