@@ -825,15 +825,15 @@
       }
     });
 
-    if (allNewsItems.length === 0) {
-      allNewsItems = getFallbackNews().map(aiEnrichItem);
-    }
-
     // Re-merge cached GDELT items so they survive RSS refresh cycles
     if (cachedGDELTItems.length > 0) {
       cachedGDELTItems.forEach(function (item) { allNewsItems.push(item); });
       var srcEl = document.getElementById('gs-sources');
       if (srcEl) srcEl.textContent = FEED_SOURCES.length + '+GDELT';
+    }
+
+    if (allNewsItems.length === 0) {
+      allNewsItems = getFallbackNews().map(aiEnrichItem);
     }
 
     renderNews();
