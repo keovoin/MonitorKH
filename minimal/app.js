@@ -617,6 +617,7 @@
   // NEWS FETCHING WITH AI ENRICHMENT
   // =========================================================
   var allNewsItems = [];
+  var cachedGDELTItems = [];
   var currentFeedFilter = 'all';
 
   async function fetchRSS(source) {
@@ -823,6 +824,13 @@
         });
       }
     });
+
+    // Re-merge cached GDELT items so they survive RSS refresh cycles
+    if (cachedGDELTItems.length > 0) {
+      cachedGDELTItems.forEach(function (item) { allNewsItems.push(item); });
+      var srcEl = document.getElementById('gs-sources');
+      if (srcEl) srcEl.textContent = FEED_SOURCES.length + '+GDELT';
+    }
 
     if (allNewsItems.length === 0) {
       allNewsItems = getFallbackNews().map(aiEnrichItem);
@@ -1452,6 +1460,7 @@
 
       if (!data.articles || data.articles.length === 0) {
         container.innerHTML = '<div class="loading-state"><span>No global articles found</span></div>';
+        cachedGDELTItems = [];
         return;
       }
 
@@ -1501,6 +1510,8 @@
 
   function addGDELTToNewsFeed(articles) {
     var added = 0;
+    cachedGDELTItems = [];
+    allNewsItems = allNewsItems.filter(function (i) { return i.sourceId !== 'gdelt'; });
     articles.forEach(function (article) {
       if (added >= 10) return;
       var title = article.title || '';
@@ -1523,7 +1534,9 @@
         sourceColor: 'source-gdelt',
         snippet: (article.sourcecountry || '') + ' | ' + (article.language || '') + ' | ' + (article.domain || ''),
       };
-      allNewsItems.push(aiEnrichItem(item));
+      var enriched = aiEnrichItem(item);
+      cachedGDELTItems.push(enriched);
+      allNewsItems.push(enriched);
       added++;
     });
 
@@ -1546,6 +1559,8 @@
       var data = await resp.json();
 
       if (!data.timeline || !data.timeline[0] || !data.timeline[0].data) {
+        var oldLabels = container.parentNode.querySelector('.gdelt-tone-labels');
+        if (oldLabels) oldLabels.remove();
         container.innerHTML = '<div class="loading-state"><span>Tone data unavailable</span></div>';
         return;
       }
@@ -1585,10 +1600,14 @@
           '<span>Positive &#9650; / Negative &#9660;</span>' +
           '<span>' + (lastDate.length >= 8 ? lastDate.slice(4, 6) + '/' + lastDate.slice(6, 8) : '') + '</span>';
       }
+      var oldLabels = container.parentNode.querySelector('.gdelt-tone-labels');
+      if (oldLabels) oldLabels.remove();
       container.parentNode.appendChild(labels);
 
     } catch (e) {
       console.warn('GDELT tone error:', e);
+      var oldLabels = container.parentNode.querySelector('.gdelt-tone-labels');
+      if (oldLabels) oldLabels.remove();
       container.innerHTML = '<div class="loading-state"><span>Tone chart unavailable</span></div>';
     }
   }
