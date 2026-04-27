@@ -390,6 +390,7 @@ body {
 .source-ap { background: rgba(220, 50, 50, 0.15); color: #dc3232; }
 .source-nikkei { background: rgba(0, 150, 200, 0.15); color: #0096c8; }
 .source-default { background: rgba(148, 163, 184, 0.15); color: var(--text-secondary); }
+.source-gdelt { background: rgba(6, 182, 212, 0.15); color: var(--cyan); }
 
 /* ===== INTEL SUB-SECTIONS ===== */
 .intel-sub-section {
@@ -703,6 +704,128 @@ body {
 }
 .leaflet-popup-tip { background: var(--bg-card) !important; }
 .leaflet-popup-content { font-family: var(--font) !important; font-size: 12px !important; }
+
+/* ===== GLOBE ZOOM CONTROLS ===== */
+.globe-zoom-controls {
+  position: absolute; bottom: 10px; left: 10px; z-index: 200;
+  display: flex; flex-direction: column; gap: 3px;
+}
+.globe-zoom-btn {
+  width: 32px; height: 32px; border: 1px solid rgba(59,130,246,0.3);
+  background: rgba(12,18,32,0.88); color: #e5e7eb; font-size: 16px;
+  border-radius: 6px; cursor: pointer; display: flex; align-items: center;
+  justify-content: center; transition: all 0.15s;
+}
+.globe-zoom-btn:hover { background: rgba(59,130,246,0.3); border-color: rgba(59,130,246,0.6); }
+body.light-mode .globe-zoom-controls .globe-zoom-btn {
+  background: rgba(255,255,255,0.92); color: #111827; border-color: #d1d5db;
+}
+
+/* ===== GDELT PANEL ===== */
+.gdelt-info-panel {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: 6px; padding: 10px 12px; margin-bottom: 8px;
+}
+.gdelt-info-title {
+  font-size: 12px; font-weight: 600; color: var(--text-primary); margin-bottom: 6px;
+}
+.gdelt-info-list {
+  list-style: disc; padding-left: 18px; margin: 0 0 6px 0;
+}
+.gdelt-info-list li {
+  font-size: 11px; color: var(--text-secondary); line-height: 1.6;
+}
+.gdelt-source {
+  font-size: 10px; color: var(--accent); margin-top: 4px;
+}
+.gdelt-tone-chart {
+  display: flex; align-items: flex-end; gap: 2px; height: 60px;
+  padding: 4px 0;
+}
+.tone-bar {
+  flex: 1; min-width: 3px; border-radius: 2px 2px 0 0; transition: height 0.3s;
+  position: relative; cursor: default;
+}
+.tone-bar.positive { background: var(--green); }
+.tone-bar.negative { background: var(--red); }
+.tone-bar.neutral { background: var(--text-muted); }
+.tone-bar:hover::after {
+  content: attr(data-tooltip); position: absolute; bottom: 100%; left: 50%;
+  transform: translateX(-50%); background: rgba(12,18,32,0.95); color: #e5e7eb;
+  font-size: 9px; padding: 3px 6px; border-radius: 3px; white-space: nowrap;
+  pointer-events: none; z-index: 10;
+}
+.gdelt-tone-labels {
+  display: flex; justify-content: space-between; font-size: 9px; color: var(--text-muted);
+  padding: 2px 0;
+}
+.gdelt-articles {
+  max-height: 300px; overflow-y: auto; display: flex; flex-direction: column; gap: 3px;
+  padding: 4px 0;
+}
+.gdelt-article {
+  display: flex; gap: 8px; padding: 6px 8px; background: var(--bg-card);
+  border: 1px solid var(--border); border-radius: 5px; cursor: pointer;
+  transition: background 0.15s;
+}
+.gdelt-article:hover { background: var(--bg-card-hover); }
+.gdelt-article-body { flex: 1; min-width: 0; }
+.gdelt-article-title {
+  font-size: 11px; font-weight: 500; color: var(--text-primary);
+  line-height: 1.35; margin-bottom: 2px;
+  overflow: hidden; text-overflow: ellipsis;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+}
+.gdelt-article-meta {
+  display: flex; gap: 6px; align-items: center; font-size: 9px; color: var(--text-muted);
+}
+.gdelt-lang-tag {
+  background: rgba(139,92,246,0.15); color: var(--purple);
+  padding: 1px 5px; border-radius: 3px; font-size: 9px; text-transform: uppercase;
+}
+.gdelt-country-tag {
+  background: rgba(59,130,246,0.15); color: var(--accent);
+  padding: 1px 5px; border-radius: 3px; font-size: 9px;
+}
+
+/* ===== CSX STOCK SECTION ===== */
+.csx-index-bar {
+  display: flex; align-items: center; gap: 16px; padding: 10px 12px;
+  background: var(--bg-card); border: 1px solid var(--border); border-radius: 6px;
+  margin-bottom: 8px;
+}
+.csx-index-name { font-size: 12px; font-weight: 600; color: var(--text-primary); }
+.csx-index-value { font-size: 18px; font-weight: 700; color: var(--text-primary); }
+.csx-index-change { font-size: 12px; font-weight: 600; padding: 2px 8px; border-radius: 4px; }
+.csx-index-change.up { background: rgba(16,185,129,0.15); color: var(--green); }
+.csx-index-change.down { background: rgba(239,68,68,0.15); color: var(--red); }
+.csx-index-change.flat { background: rgba(90,106,133,0.15); color: var(--text-muted); }
+.csx-index-meta { font-size: 10px; color: var(--text-muted); }
+
+.csx-stock-list { display: flex; flex-direction: column; gap: 2px; max-height: 400px; overflow-y: auto; }
+.csx-stock-row {
+  display: grid; grid-template-columns: 70px 1fr 80px 70px 60px;
+  align-items: center; gap: 6px; padding: 6px 8px;
+  background: var(--bg-card); border: 1px solid var(--border); border-radius: 4px;
+  font-size: 11px; transition: background 0.15s;
+}
+.csx-stock-row:hover { background: var(--bg-card-hover); }
+.csx-stock-row.header {
+  font-weight: 600; color: var(--text-muted); font-size: 10px;
+  text-transform: uppercase; background: transparent; border: none;
+}
+.csx-ticker { font-weight: 600; color: var(--accent); }
+.csx-name { color: var(--text-secondary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.csx-price { font-weight: 600; color: var(--text-primary); text-align: right; }
+.csx-volume { color: var(--text-muted); text-align: right; }
+.csx-change { text-align: right; font-weight: 600; padding: 1px 4px; border-radius: 3px; font-size: 10px; }
+.csx-change.up { color: var(--green); }
+.csx-change.down { color: var(--red); }
+.csx-change.flat { color: var(--text-muted); }
+.csx-disclaimer {
+  font-size: 9px; color: var(--text-muted); padding: 6px 8px;
+  border-top: 1px solid var(--border); margin-top: 6px;
+}
 
 /* ===== RESPONSIVE ===== */
 @media (max-width: 1200px) {

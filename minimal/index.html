@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Cambodia Monitor v3.0 - AI Intelligence Dashboard</title>
+  <title>Cambodia Monitor v3.2 - AI Intelligence Dashboard</title>
   <meta name="description" content="AI-powered Cambodia intelligence dashboard: 3D globe, AI news analysis, economic forecasting, strategic risk assessment, and real-time data.">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>&#x1F1F0;&#x1F1ED;</text></svg>">
   <link rel="stylesheet" href="styles.css">
@@ -20,7 +20,7 @@
         <span class="logo-flag">&#x1F1F0;&#x1F1ED;</span>
         <span class="logo-text">CAMBODIA</span>
         <span class="logo-sub">MONITOR</span>
-        <span class="version">v3.0 AI</span>
+        <span class="version">v3.2 AI</span>
       </div>
       <div class="status-pills">
         <span class="pill pill-live"><span class="pulse-dot"></span> LIVE</span>
@@ -107,6 +107,12 @@
           <span class="gl-item"><span class="gl-dot" style="background:#10b981"></span> Port/SEZ</span>
           <span class="gl-item"><span class="gl-dot" style="background:#8b5cf6"></span> Border</span>
         </div>
+        <!-- Globe Zoom Controls -->
+        <div class="globe-zoom-controls" id="globe-zoom-controls">
+          <button class="globe-zoom-btn" id="globe-zoom-in" title="Zoom In">+</button>
+          <button class="globe-zoom-btn" id="globe-zoom-out" title="Zoom Out">&minus;</button>
+          <button class="globe-zoom-btn" id="globe-zoom-reset" title="Reset View">&#8634;</button>
+        </div>
       </div>
 
       <!-- 2D Map (hidden by default) -->
@@ -191,6 +197,68 @@
               <span class="slabel slabel-neg" id="slabel-neg">Negative 33%</span>
             </div>
           </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 2B: GDELT Global News Intelligence + CSX Stock Market -->
+    <section class="content-grid grid-2col">
+      <!-- GDELT Global News Intelligence -->
+      <div class="card-section" id="gdelt-section">
+        <div class="card-header">
+          <div class="card-title">
+            <span class="ai-badge">AI</span>
+            <span>GLOBAL NEWS INTELLIGENCE</span>
+            <span class="item-count" id="gdelt-total">0</span>
+          </div>
+          <button class="card-btn" id="gdelt-refresh" title="Refresh GDELT">&#8635;</button>
+        </div>
+        <div class="card-body">
+          <div class="gdelt-info-panel">
+            <div class="gdelt-info-title">Real-time global news monitoring:</div>
+            <ul class="gdelt-info-list">
+              <li>Curated topic categories (conflicts, cyber, etc.)</li>
+              <li>Articles from 100+ languages translated</li>
+              <li>Updates every 15 minutes</li>
+              <li>14-day media tone &amp; volume trend per topic</li>
+            </ul>
+            <div class="gdelt-source">Source: GDELT Project (gdeltproject.org)</div>
+          </div>
+          <div class="intel-sub-section">
+            <div class="intel-header">Media Tone Trend (14 days)</div>
+            <div class="gdelt-tone-chart" id="gdelt-tone-chart">
+              <div class="loading-state"><div class="spinner"></div><span>Loading tone data...</span></div>
+            </div>
+          </div>
+          <div class="intel-sub-section">
+            <div class="intel-header">Global Articles about Cambodia</div>
+            <div class="gdelt-articles" id="gdelt-articles">
+              <div class="loading-state"><div class="spinner"></div><span>Fetching global coverage...</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Cambodia Stock Exchange (CSX) -->
+      <div class="card-section" id="csx-section">
+        <div class="card-header">
+          <div class="card-title">
+            <span class="ai-badge" style="background:rgba(16,185,129,0.15);color:#10b981">CSX</span>
+            <span>CAMBODIA STOCK EXCHANGE</span>
+          </div>
+          <button class="card-btn" id="csx-refresh" title="Refresh">&#8635;</button>
+        </div>
+        <div class="card-body">
+          <div class="csx-index-bar" id="csx-index">
+            <div class="loading-state"><div class="spinner"></div><span>Loading CSX index...</span></div>
+          </div>
+          <div class="intel-sub-section">
+            <div class="intel-header">Listed Securities</div>
+            <div class="csx-stock-list" id="csx-stocks">
+              <div class="loading-state"><div class="spinner"></div><span>Loading stock data...</span></div>
+            </div>
+          </div>
+          <div class="csx-disclaimer">Data for informational purposes. Source: CSX (csx.com.kh)</div>
         </div>
       </div>
     </section>
@@ -346,7 +414,7 @@
   <footer class="footer-bar">
     <div class="footer-left">
       <span class="footer-brand">CAMBODIA MONITOR</span>
-      <span class="footer-version">v3.0 AI</span>
+      <span class="footer-version">v3.2 AI</span>
     </div>
     <div class="footer-links">
       <a href="https://github.com/keovoin/MonitorKH" target="_blank">GitHub</a>
@@ -359,15 +427,17 @@
   <div class="modal-overlay" id="about-modal">
     <div class="modal">
       <div class="modal-header">
-        <h3>About Cambodia Monitor v3.0</h3>
+        <h3>About Cambodia Monitor v3.2</h3>
         <button class="modal-close" id="modal-close">&times;</button>
       </div>
       <div class="modal-body">
-        <p>Cambodia Monitor v3.0 is an AI-powered intelligence dashboard focused on Cambodia.</p>
+        <p>Cambodia Monitor v3.2 is an AI-powered intelligence dashboard focused on Cambodia.</p>
         <br>
         <p><strong>3D Globe:</strong> Interactive globe showing flight routes, shipping lanes, submarine internet cables, and key infrastructure pins for Cambodia.</p>
         <p><strong>AI Features:</strong> Sentiment analysis, auto-categorization, intelligence briefings, economic forecasting, strategic risk scoring</p>
-        <p><strong>News Sources:</strong> Khmer Times, PP Post, VOA, Cambodianess, Reuters, Al Jazeera, BBC, AP, Nikkei Asia</p>
+        <p><strong>News Sources:</strong> Khmer Times, PP Post, VOA, Cambodianess, Reuters, Al Jazeera, BBC, AP, Nikkei Asia + GDELT Global</p>
+        <p><strong>GDELT Intelligence:</strong> Real-time global news monitoring from 100+ languages, media tone trends, curated topic tracking</p>
+        <p><strong>Cambodia Stock Exchange:</strong> CSX index and listed securities with daily price tracking</p>
         <p><strong>Economic Data:</strong> World Bank API (GDP, inflation, FDI, governance indicators)</p>
         <p><strong>Weather:</strong> Open-Meteo API (4 cities, real-time)</p>
         <p><strong>Exchange Rates:</strong> 8 currency pairs updated hourly</p>
