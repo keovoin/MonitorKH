@@ -1327,10 +1327,10 @@
     var indicators = [
       { id: 'NY.GDP.MKTP.CD', name: 'GDP', format: 'B', unit: 'USD' },
       { id: 'NY.GDP.PCAP.CD', name: 'GDP/Capita', format: 'K', unit: 'USD' },
-      { id: 'FP.CPI.TOTL.ZG', name: 'Inflation', format: '%', unit: '' },
+      { id: 'FP.CPI.TOTL.ZG', name: 'Inflation', format: '%', unit: '', invertTrend: true },
       { id: 'NE.EXP.GNFS.CD', name: 'Exports', format: 'B', unit: 'USD' },
       { id: 'BX.KLT.DINV.CD.WD', name: 'FDI Inflow', format: 'B', unit: 'USD' },
-      { id: 'SL.UEM.TOTL.ZS', name: 'Unemployment', format: '%', unit: '' },
+      { id: 'SL.UEM.TOTL.ZS', name: 'Unemployment', format: '%', unit: '', invertTrend: true },
     ];
 
     var results = await Promise.allSettled(
@@ -1358,6 +1358,7 @@
           else if (ind.format === '%') value = raw.toFixed(1) + '%';
           if (entries.length > 1 && entries[1].value !== null) {
             trend = raw > entries[1].value ? 'up' : raw < entries[1].value ? 'down' : 'neutral';
+            if (ind.invertTrend && trend !== 'neutral') trend = trend === 'up' ? 'down' : 'up';
           }
         }
       }
