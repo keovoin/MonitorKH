@@ -1345,7 +1345,8 @@
       var ind = indicators[i];
       var value = '--';
       var year = '';
-      var trend = 'neutral';
+      var direction = 'neutral';
+      var sentiment = 'neutral';
 
       if (result.status === 'fulfilled' && result.value && result.value[1]) {
         var entries = result.value[1].filter(function (e) { return e.value !== null; });
@@ -1357,8 +1358,9 @@
           else if (ind.format === 'K') value = Math.round(raw).toLocaleString();
           else if (ind.format === '%') value = raw.toFixed(1) + '%';
           if (entries.length > 1 && entries[1].value !== null) {
-            trend = raw > entries[1].value ? 'up' : raw < entries[1].value ? 'down' : 'neutral';
-            if (ind.invertTrend && trend !== 'neutral') trend = trend === 'up' ? 'down' : 'up';
+            direction = raw > entries[1].value ? 'up' : raw < entries[1].value ? 'down' : 'neutral';
+            sentiment = direction;
+            if (ind.invertTrend && sentiment !== 'neutral') sentiment = sentiment === 'up' ? 'down' : 'up';
           }
         }
       }
@@ -1368,7 +1370,7 @@
       card.innerHTML =
         '<div class="eco-label">' + escapeHtml(ind.name) + (year ? ' (' + year + ')' : '') + '</div>' +
         '<div class="eco-value">' + (ind.unit ? '<span class="eco-unit">' + ind.unit + ' </span>' : '') + value + '</div>' +
-        '<div class="eco-trend trend-' + trend + '">' + (trend === 'up' ? '&#9650;' : trend === 'down' ? '&#9660;' : '&#8212;') + '</div>';
+        '<div class="eco-trend trend-' + sentiment + '">' + (direction === 'up' ? '&#9650;' : direction === 'down' ? '&#9660;' : '&#8212;') + '</div>';
       ecoGrid.appendChild(card);
     });
   }
