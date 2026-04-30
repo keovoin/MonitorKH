@@ -1,8 +1,8 @@
 // =========================================================
-// Cambodia Monitor v3.2 - AI Intelligence Dashboard
-// Features: 3D Globe, AI News Analysis, GDELT Global Intelligence,
-// CSX Stock Exchange, Economic Forecasting, Strategic Risk Assessment
-// Free APIs: Open-Meteo, World Bank, RSS2JSON, Globe.gl, GDELT Project
+// Cambodia Monitor v4.0 - WorldMonitor-Style Intelligence Dashboard
+// Features: 3D Globe, MapLibre GL 2D Map, AI News Analysis,
+// GDELT Global Intelligence, CSX Stock Exchange, Economic Forecasting,
+// Strategic Risk Assessment — all free APIs, no keys required.
 // =========================================================
 
 (function () {
@@ -285,7 +285,9 @@
   var globe = null;
   var is3D = true;
   var leafletMap = null;
+  var maplibreMap = null;
   var layerGroups = {};
+  var maplibreMarkers = [];
 
   // Globe layer visibility state
   var globeLayerState = {
@@ -413,10 +415,10 @@
       .pointRadius(function (d) { return d.size; })
       .pointColor(function (d) { return d.color; })
       .pointLabel(function (d) {
-        return '<div style="font-family:Inter,sans-serif;background:rgba(12,18,32,0.95);padding:8px 12px;border-radius:6px;border:1px solid rgba(26,37,64,0.8);color:#e5e7eb;font-size:12px;min-width:140px;max-width:240px">' +
+        return '<div style="font-family:SF Mono,Monaco,Cascadia Code,monospace;background:#141414;padding:8px 12px;border:1px solid #2a2a2a;color:#e8e8e8;font-size:11px;min-width:140px;max-width:240px">' +
           '<div style="font-weight:700;margin-bottom:2px">' + d.emoji + ' ' + d.name + '</div>' +
-          (d.desc ? '<div style="font-size:10px;color:#94a3b8">' + d.desc + '</div>' : '') +
-          '<div style="font-size:9px;color:#5a6a85;margin-top:2px;text-transform:uppercase">' + d.type.replace('-', ' ') + '</div>' +
+          (d.desc ? '<div style="font-size:10px;color:#888">' + d.desc + '</div>' : '') +
+          '<div style="font-size:9px;color:#666;margin-top:2px;text-transform:uppercase;letter-spacing:0.5px">' + d.type.replace('-', ' ') + '</div>' +
           '</div>';
       })
       // Arcs (flights, shipping, cables)
@@ -428,7 +430,7 @@
       .arcDashAnimateTime(function (d) { return d.animTime; })
       .arcLabel(function (d) {
         var icon = d.category === 'flight' ? '\u2708' : d.category === 'shipping' ? '\uD83D\uDEA2' : '\uD83D\uDD0C';
-        return '<div style="font-family:Inter,sans-serif;background:rgba(12,18,32,0.92);padding:6px 10px;border-radius:5px;color:#e5e7eb;font-size:11px;border:1px solid rgba(26,37,64,0.6)">' +
+        return '<div style="font-family:SF Mono,Monaco,Cascadia Code,monospace;background:#141414;padding:6px 10px;border:1px solid #2a2a2a;color:#e8e8e8;font-size:10px">' +
           icon + ' ' + d.label + '</div>';
       })
       (container);
@@ -460,13 +462,14 @@
   }
 
   function setupGlobeLayerToggles() {
-    var btns = document.querySelectorAll('.globe-layer-btn');
-    btns.forEach(function (btn) {
-      btn.addEventListener('click', function () {
-        var layer = this.dataset.glayer;
+    var toggles = document.querySelectorAll('.layer-toggle[data-mode="3d"]');
+    toggles.forEach(function (toggle) {
+      var cb = toggle.querySelector('input[type="checkbox"]');
+      if (!cb) return;
+      cb.addEventListener('change', function () {
+        var layer = toggle.dataset.glayer;
         if (globeLayerState[layer] !== undefined) {
-          globeLayerState[layer] = !globeLayerState[layer];
-          this.classList.toggle('active', globeLayerState[layer]);
+          globeLayerState[layer] = cb.checked;
           refreshGlobe();
           updateArcCounts();
         }
@@ -484,15 +487,92 @@
   }
 
   // =========================================================
-  // 2D MAP INITIALIZATION (Leaflet)
+  // 2D MAP INITIALIZATION (MapLibre GL with OpenFreeMap dark tiles)
   // =========================================================
   function init2DMap() {
+    if (maplibreMap) {
+      maplibreMap.resize();
+      return;
+    }
+
+    // Try MapLibre GL first (worldmonitor-style), fall back to Leaflet
+    if (typeof maplibregl !== 'undefined') {
+      initMapLibre();
+    } else {
+      initLeaflet();
+    }
+  }
+
+  function initMapLibre() {
+    maplibreMap = new maplibregl.Map({
+      container: 'map',
+      style: 'https://tiles.openfreemap.org/styles/dark',
+      center: [105, 12.5],
+      zoom: 6,
+      attributionControl: true,
+    });
+
+    maplibreMap.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'bottom-right');
+
+    maplibreMap.on('load', function () {
+      addMapLibreMarkers();
+    });
+
+    // Hook up 2D layer toggles
+    setup2DLayerToggles();
+  }
+
+  function addMapLibreMarkers() {
+    clearMapLibreMarkers();
+    var toggles = document.querySelectorAll('.layer-toggle[data-mode="2d"]');
+    toggles.forEach(function (toggle) {
+      var layerKey = toggle.dataset.layer;
+      var cb = toggle.querySelector('input[type="checkbox"]');
+      if (!cb || !cb.checked) return;
+      var locs = MAP_LAYERS[layerKey];
+      if (!locs) return;
+      locs.forEach(function (loc) {
+        var style = LAYER_STYLES[loc.type] || LAYER_STYLES.city;
+        var el = document.createElement('div');
+        el.style.cssText = 'width:' + (style.radius * 2 + 2) + 'px;height:' + (style.radius * 2 + 2) + 'px;background:' + style.color + ';border:1.5px solid rgba(255,255,255,0.8);border-radius:50%;cursor:pointer;';
+        var marker = new maplibregl.Marker({ element: el })
+          .setLngLat([loc.coords[1], loc.coords[0]])
+          .setPopup(new maplibregl.Popup({ offset: 10, closeButton: false })
+            .setHTML(createPopupContent(loc)))
+          .addTo(maplibreMap);
+        marker._layerKey = layerKey;
+        maplibreMarkers.push(marker);
+      });
+    });
+  }
+
+  function clearMapLibreMarkers() {
+    maplibreMarkers.forEach(function (m) { m.remove(); });
+    maplibreMarkers = [];
+  }
+
+  function setup2DLayerToggles() {
+    var toggles = document.querySelectorAll('.layer-toggle[data-mode="2d"]');
+    toggles.forEach(function (toggle) {
+      var cb = toggle.querySelector('input[type="checkbox"]');
+      if (!cb) return;
+      cb.addEventListener('change', function () {
+        if (maplibreMap) {
+          addMapLibreMarkers();
+        } else if (leafletMap) {
+          syncLayers();
+        }
+      });
+    });
+  }
+
+  function initLeaflet() {
     if (leafletMap) return;
 
     leafletMap = L.map('map', {
       center: [12.5, 105],
       zoom: 7,
-      zoomControl: true,
+      zoomControl: false,
       attributionControl: true,
     });
 
@@ -508,23 +588,14 @@
 
     populateLayers();
     syncLayers();
-
-    document.querySelectorAll('#layer-list input[type="checkbox"]').forEach(function (cb) {
-      cb.addEventListener('change', syncLayers);
-    });
-
-    document.getElementById('layer-toggle').addEventListener('click', function () {
-      var list = document.getElementById('layer-list');
-      list.classList.toggle('collapsed');
-      this.textContent = list.classList.contains('collapsed') ? '\u25B6' : '\u25BC';
-    });
+    setup2DLayerToggles();
   }
 
   function createPopupContent(loc) {
-    var html = '<div style="font-family:Inter,sans-serif;min-width:140px">';
-    html += '<div style="font-weight:700;font-size:13px;margin-bottom:4px">' + loc.name + '</div>';
-    if (loc.desc) html += '<div style="font-size:11px;color:#94a3b8;margin-bottom:2px">' + loc.desc + '</div>';
-    if (loc.pop) html += '<div style="font-size:11px;color:#64748b">Pop: ' + loc.pop + '</div>';
+    var html = '<div style="font-family:SF Mono,Monaco,Cascadia Code,monospace;min-width:140px">';
+    html += '<div style="font-weight:700;font-size:12px;margin-bottom:4px">' + loc.name + '</div>';
+    if (loc.desc) html += '<div style="font-size:10px;opacity:0.7;margin-bottom:2px">' + loc.desc + '</div>';
+    if (loc.pop) html += '<div style="font-size:10px;opacity:0.5">Pop: ' + loc.pop + '</div>';
     html += '</div>';
     return html;
   }
@@ -551,39 +622,48 @@
   }
 
   function syncLayers() {
-    var checkboxes = document.querySelectorAll('#layer-list input[type="checkbox"]');
-    var count = 0;
+    var checkboxes = document.querySelectorAll('.layer-toggle[data-mode="2d"] input[type="checkbox"]');
     checkboxes.forEach(function (cb) {
-      var layerKey = cb.dataset.layer;
+      var toggle = cb.closest('.layer-toggle');
+      var layerKey = toggle ? toggle.dataset.layer : null;
+      if (!layerKey || !layerGroups[layerKey]) return;
       if (cb.checked) {
         if (leafletMap && !leafletMap.hasLayer(layerGroups[layerKey])) leafletMap.addLayer(layerGroups[layerKey]);
-        count++;
       } else {
         if (leafletMap && leafletMap.hasLayer(layerGroups[layerKey])) leafletMap.removeLayer(layerGroups[layerKey]);
       }
     });
-    var countEl = document.getElementById('layer-count');
-    if (countEl) countEl.textContent = count;
   }
 
   // =========================================================
   // MAP TOGGLE (2D/3D)
   // =========================================================
   function switchTo3D() {
-    document.getElementById('globe-wrapper').style.display = '';
-    document.getElementById('map-wrapper').style.display = 'none';
+    document.getElementById('globe-container').style.display = '';
+    document.getElementById('map').style.display = 'none';
     document.getElementById('map-toggle-label').textContent = '3D';
     is3D = true;
+    // Show 3D layer toggles, hide 2D
+    document.querySelectorAll('.layer-toggle[data-mode="3d"]').forEach(function (t) { t.style.display = ''; });
+    document.querySelectorAll('.layer-toggle[data-mode="2d"]').forEach(function (t) { t.style.display = 'none'; });
+    document.getElementById('map-legend').style.display = '';
     if (!globe) initGlobe();
   }
 
   function switchTo2D() {
-    document.getElementById('globe-wrapper').style.display = 'none';
-    document.getElementById('map-wrapper').style.display = '';
+    document.getElementById('globe-container').style.display = 'none';
+    document.getElementById('map').style.display = '';
     document.getElementById('map-toggle-label').textContent = '2D';
     is3D = false;
+    // Show 2D layer toggles, hide 3D
+    document.querySelectorAll('.layer-toggle[data-mode="3d"]').forEach(function (t) { t.style.display = 'none'; });
+    document.querySelectorAll('.layer-toggle[data-mode="2d"]').forEach(function (t) { t.style.display = ''; });
+    document.getElementById('map-legend').style.display = 'none';
     init2DMap();
-    setTimeout(function () { if (leafletMap) leafletMap.invalidateSize(); }, 100);
+    setTimeout(function () {
+      if (maplibreMap) maplibreMap.resize();
+      else if (leafletMap) leafletMap.invalidateSize();
+    }, 100);
   }
 
   document.getElementById('map-toggle').addEventListener('click', function () {
@@ -606,12 +686,7 @@
   updateClock();
   setInterval(updateClock, 1000);
 
-  function updateViewers() {
-    var base = 12 + Math.floor(Math.random() * 30);
-    document.getElementById('viewer-count').textContent = base + ' online';
-  }
-  updateViewers();
-  setInterval(updateViewers, 30000);
+
 
   // =========================================================
   // NEWS FETCHING WITH AI ENRICHMENT
@@ -861,8 +936,8 @@
 
   // News tab clicks
   document.getElementById('news-tabs').addEventListener('click', function (e) {
-    if (e.target.classList.contains('tab')) {
-      document.querySelectorAll('#news-tabs .tab').forEach(function (t) { t.classList.remove('active'); });
+    if (e.target.classList.contains('panel-tab')) {
+      document.querySelectorAll('#news-tabs .panel-tab').forEach(function (t) { t.classList.remove('active'); });
       e.target.classList.add('active');
       currentFeedFilter = e.target.dataset.feed;
       renderNews();
@@ -1327,10 +1402,10 @@
     var indicators = [
       { id: 'NY.GDP.MKTP.CD', name: 'GDP', format: 'B', unit: 'USD' },
       { id: 'NY.GDP.PCAP.CD', name: 'GDP/Capita', format: 'K', unit: 'USD' },
-      { id: 'FP.CPI.TOTL.ZG', name: 'Inflation', format: '%', unit: '' },
+      { id: 'FP.CPI.TOTL.ZG', name: 'Inflation', format: '%', unit: '', invertTrend: true },
       { id: 'NE.EXP.GNFS.CD', name: 'Exports', format: 'B', unit: 'USD' },
       { id: 'BX.KLT.DINV.CD.WD', name: 'FDI Inflow', format: 'B', unit: 'USD' },
-      { id: 'SL.UEM.TOTL.ZS', name: 'Unemployment', format: '%', unit: '' },
+      { id: 'SL.UEM.TOTL.ZS', name: 'Unemployment', format: '%', unit: '', invertTrend: true },
     ];
 
     var results = await Promise.allSettled(
@@ -1345,7 +1420,8 @@
       var ind = indicators[i];
       var value = '--';
       var year = '';
-      var trend = 'neutral';
+      var direction = 'neutral';
+      var sentiment = 'neutral';
 
       if (result.status === 'fulfilled' && result.value && result.value[1]) {
         var entries = result.value[1].filter(function (e) { return e.value !== null; });
@@ -1357,7 +1433,9 @@
           else if (ind.format === 'K') value = Math.round(raw).toLocaleString();
           else if (ind.format === '%') value = raw.toFixed(1) + '%';
           if (entries.length > 1 && entries[1].value !== null) {
-            trend = raw > entries[1].value ? 'up' : raw < entries[1].value ? 'down' : 'neutral';
+            direction = raw > entries[1].value ? 'up' : raw < entries[1].value ? 'down' : 'neutral';
+            sentiment = direction;
+            if (ind.invertTrend && sentiment !== 'neutral') sentiment = sentiment === 'up' ? 'down' : 'up';
           }
         }
       }
@@ -1367,7 +1445,7 @@
       card.innerHTML =
         '<div class="eco-label">' + escapeHtml(ind.name) + (year ? ' (' + year + ')' : '') + '</div>' +
         '<div class="eco-value">' + (ind.unit ? '<span class="eco-unit">' + ind.unit + ' </span>' : '') + value + '</div>' +
-        '<div class="eco-trend trend-' + trend + '">' + (trend === 'up' ? '&#9650;' : trend === 'down' ? '&#9660;' : '&#8212;') + '</div>';
+        '<div class="eco-trend trend-' + sentiment + '">' + (direction === 'up' ? '&#9650;' : direction === 'down' ? '&#9660;' : '&#8212;') + '</div>';
       ecoGrid.appendChild(card);
     });
   }
@@ -1426,21 +1504,43 @@
   }
 
   // =========================================================
-  // GLOBE ZOOM CONTROLS
+  // MAP ZOOM CONTROLS (unified for both 3D globe and 2D map)
   // =========================================================
-  document.getElementById('globe-zoom-in').addEventListener('click', function () {
-    if (!globe) return;
-    var pov = globe.pointOfView();
-    globe.pointOfView({ lat: pov.lat, lng: pov.lng, altitude: Math.max(0.5, pov.altitude * 0.7) }, 300);
+  document.getElementById('map-zoom-in').addEventListener('click', function () {
+    if (is3D && globe) {
+      var pov = globe.pointOfView();
+      globe.pointOfView({ lat: pov.lat, lng: pov.lng, altitude: Math.max(0.5, pov.altitude * 0.7) }, 300);
+    } else if (maplibreMap) {
+      maplibreMap.zoomIn();
+    } else if (leafletMap) {
+      leafletMap.zoomIn();
+    }
   });
-  document.getElementById('globe-zoom-out').addEventListener('click', function () {
-    if (!globe) return;
-    var pov = globe.pointOfView();
-    globe.pointOfView({ lat: pov.lat, lng: pov.lng, altitude: Math.min(5, pov.altitude * 1.4) }, 300);
+  document.getElementById('map-zoom-out').addEventListener('click', function () {
+    if (is3D && globe) {
+      var pov = globe.pointOfView();
+      globe.pointOfView({ lat: pov.lat, lng: pov.lng, altitude: Math.min(5, pov.altitude * 1.4) }, 300);
+    } else if (maplibreMap) {
+      maplibreMap.zoomOut();
+    } else if (leafletMap) {
+      leafletMap.zoomOut();
+    }
   });
-  document.getElementById('globe-zoom-reset').addEventListener('click', function () {
-    if (!globe) return;
-    globe.pointOfView({ lat: 12.5, lng: 105, altitude: 2.2 }, 800);
+  document.getElementById('map-zoom-reset').addEventListener('click', function () {
+    if (is3D && globe) {
+      globe.pointOfView({ lat: 12.5, lng: 105, altitude: 2.2 }, 800);
+    } else if (maplibreMap) {
+      maplibreMap.flyTo({ center: [105, 12.5], zoom: 6 });
+    } else if (leafletMap) {
+      leafletMap.setView([12.5, 105], 7);
+    }
+  });
+
+  // Layer toggle collapse button
+  document.getElementById('toggle-collapse-btn').addEventListener('click', function () {
+    var list = document.getElementById('toggle-list');
+    list.classList.toggle('collapsed');
+    this.textContent = list.classList.contains('collapsed') ? '\u25B6' : '\u25BC';
   });
 
   // =========================================================
@@ -1708,17 +1808,27 @@
   document.getElementById('csx-refresh').addEventListener('click', loadCSXStocks);
 
   // =========================================================
-  // THEME TOGGLE (Dark/Light Mode)
+  // THEME TOGGLE (Dark/Light Mode) — uses data-theme attribute
   // =========================================================
-  document.getElementById('theme-toggle').addEventListener('click', function () {
-    document.body.classList.toggle('light-mode');
-    var isLight = document.body.classList.contains('light-mode');
-    localStorage.setItem('cm-theme', isLight ? 'light' : 'dark');
-  });
-  // Restore saved theme
-  if (localStorage.getItem('cm-theme') === 'light') {
-    document.body.classList.add('light-mode');
+  function applyTheme(theme) {
+    if (theme === 'light') {
+      document.documentElement.setAttribute('data-theme', 'light');
+    } else {
+      document.documentElement.removeAttribute('data-theme');
+    }
+    var icon = document.getElementById('theme-icon');
+    if (icon) icon.innerHTML = theme === 'light' ? '&#9788;' : '&#9789;';
   }
+
+  document.getElementById('theme-toggle').addEventListener('click', function () {
+    var isLight = document.documentElement.getAttribute('data-theme') === 'light';
+    var newTheme = isLight ? 'dark' : 'light';
+    applyTheme(newTheme);
+    localStorage.setItem('cm-theme', newTheme);
+  });
+
+  // Restore saved theme
+  applyTheme(localStorage.getItem('cm-theme') || 'dark');
 
   // =========================================================
   // ABOUT MODAL
@@ -1737,6 +1847,7 @@
   // =========================================================
   // INITIALIZE
   // =========================================================
+  // Initialize all data
   initGlobe();
   loadAllNews();
   loadWeather();

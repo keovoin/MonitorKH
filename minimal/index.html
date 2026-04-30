@@ -3,444 +3,496 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Cambodia Monitor v3.2 - AI Intelligence Dashboard</title>
-  <meta name="description" content="AI-powered Cambodia intelligence dashboard: 3D globe, AI news analysis, economic forecasting, strategic risk assessment, and real-time data.">
+  <title>Cambodia Monitor v4.0 - Real-Time Intelligence Dashboard</title>
+  <meta name="description" content="Real-time Cambodia intelligence platform. AI-powered news aggregation, geopolitical monitoring, economic data, and infrastructure tracking.">
+  <meta name="theme-color" content="#0a0a0a">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>&#x1F1F0;&#x1F1ED;</text></svg>">
   <link rel="stylesheet" href="styles.css">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" />
 </head>
 <body>
-  <!-- Top Bar (sticky) -->
-  <header class="top-bar">
-    <div class="top-bar-left">
-      <div class="logo">
-        <span class="logo-flag">&#x1F1F0;&#x1F1ED;</span>
-        <span class="logo-text">CAMBODIA</span>
-        <span class="logo-sub">MONITOR</span>
-        <span class="version">v3.2 AI</span>
+  <div id="app-root">
+
+    <!-- Header -->
+    <header class="header">
+      <div class="header-left">
+        <div class="logo">
+          <span class="logo-flag">&#x1F1F0;&#x1F1ED;</span>
+          <span class="logo-text">CAMBODIA</span>
+          <span class="logo-sub">MONITOR</span>
+          <span class="version">v4.0</span>
+        </div>
+        <div class="status-indicator">
+          <span class="status-dot"></span>
+          <span>LIVE</span>
+        </div>
       </div>
-      <div class="status-pills">
-        <span class="pill pill-live"><span class="pulse-dot"></span> LIVE</span>
-        <span class="pill pill-ai"><span class="ai-dot"></span> AI ACTIVE</span>
-        <span class="pill pill-viewers" id="viewer-count">0 online</span>
+      <div class="header-clock" id="top-clock">--</div>
+      <div class="header-right">
+        <div class="search-wrapper">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          <input type="text" placeholder="Search news..." id="search-input">
+        </div>
+        <button class="map-dim-btn" id="map-toggle" title="Toggle 2D/3D">
+          <span id="map-toggle-label">3D</span>
+        </button>
+        <button class="header-btn" id="theme-toggle" title="Toggle theme">
+          <span id="theme-icon">&#9789;</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Exchange Rate Ticker -->
+    <div class="ticker-bar">
+      <div class="ticker-label">FX RATES</div>
+      <div class="ticker-track" id="ticker-track">
+        <span class="ticker-item" id="tick-usd">USD/KHR <strong>4,100</strong> <span class="tick-change neutral">--</span></span>
+        <span class="ticker-item" id="tick-thb">THB/KHR <strong>115</strong> <span class="tick-change neutral">--</span></span>
+        <span class="ticker-item" id="tick-cny">CNY/KHR <strong>565</strong> <span class="tick-change neutral">--</span></span>
+        <span class="ticker-item" id="tick-eur">EUR/KHR <strong>4,450</strong> <span class="tick-change neutral">--</span></span>
+        <span class="ticker-item" id="tick-jpy">JPY/KHR <strong>26</strong> <span class="tick-change neutral">--</span></span>
+        <span class="ticker-item" id="tick-krw">KRW/KHR <strong>3</strong> <span class="tick-change neutral">--</span></span>
+        <span class="ticker-item" id="tick-sgd">SGD/KHR <strong>3,050</strong> <span class="tick-change neutral">--</span></span>
+        <span class="ticker-item" id="tick-aud">AUD/KHR <strong>2,650</strong> <span class="tick-change neutral">--</span></span>
+        <span class="ticker-sep">|</span>
+        <span class="ticker-update" id="ticker-update">Updated: --</span>
       </div>
     </div>
-    <div class="top-bar-center">
-      <div class="top-clock" id="top-clock">--</div>
-    </div>
-    <div class="top-bar-right">
-      <div class="search-box">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-        <input type="text" placeholder="Search news..." id="search-input">
-      </div>
-      <button class="map-toggle-btn" id="map-toggle" title="Toggle 2D/3D Map">
-        <span id="map-toggle-label">3D</span>
-      </button>
-      <div class="theme-toggle" id="theme-toggle" title="Toggle light/dark mode">
-        <svg class="icon-moon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
-        <svg class="icon-sun" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
-      </div>
-    </div>
-  </header>
 
-  <!-- Exchange Rate Ticker (sticky) -->
-  <div class="ticker-bar">
-    <div class="ticker-label">FX RATES</div>
-    <div class="ticker-track" id="ticker-track">
-      <span class="ticker-item" id="tick-usd">USD/KHR <strong>4,100</strong> <span class="tick-change neutral">--</span></span>
-      <span class="ticker-item" id="tick-thb">THB/KHR <strong>115</strong> <span class="tick-change neutral">--</span></span>
-      <span class="ticker-item" id="tick-cny">CNY/KHR <strong>565</strong> <span class="tick-change neutral">--</span></span>
-      <span class="ticker-item" id="tick-eur">EUR/KHR <strong>4,450</strong> <span class="tick-change neutral">--</span></span>
-      <span class="ticker-item" id="tick-jpy">JPY/KHR <strong>26</strong> <span class="tick-change neutral">--</span></span>
-      <span class="ticker-item" id="tick-krw">KRW/KHR <strong>3</strong> <span class="tick-change neutral">--</span></span>
-      <span class="ticker-item" id="tick-sgd">SGD/KHR <strong>3,050</strong> <span class="tick-change neutral">--</span></span>
-      <span class="ticker-item" id="tick-aud">AUD/KHR <strong>2,650</strong> <span class="tick-change neutral">--</span></span>
-      <span class="ticker-sep">|</span>
-      <span class="ticker-update" id="ticker-update">Updated: --</span>
-    </div>
-  </div>
+    <!-- Main Content -->
+    <div class="main-content">
 
-  <!-- SCROLLABLE PAGE CONTENT -->
-  <main class="page-content">
-
-    <!-- SECTION 1: Map Area -->
-    <section class="map-section">
-      <!-- 3D Globe -->
-      <div class="globe-wrapper" id="globe-wrapper">
-        <div id="globe-container"></div>
-        <div class="globe-overlay-top">
-          <div class="situation-label">CAMBODIA INTELLIGENCE</div>
-        </div>
-        <!-- Globe Layer Toggles -->
-        <div class="globe-layers-panel" id="globe-layers-panel">
-          <div class="glp-title">MAP LAYERS</div>
-          <button class="globe-layer-btn active" data-glayer="flights">
-            <span class="glb-icon">&#9992;</span> Flights <span class="glb-count" id="gs-flights">18</span>
-          </button>
-          <button class="globe-layer-btn active" data-glayer="shipping">
-            <span class="glb-icon">&#128674;</span> Shipping <span class="glb-count" id="gs-shipping">8</span>
-          </button>
-          <button class="globe-layer-btn active" data-glayer="cables">
-            <span class="glb-icon">&#128268;</span> Cables <span class="glb-count" id="gs-cables">4</span>
-          </button>
-          <button class="globe-layer-btn active" data-glayer="locations">
-            <span class="glb-icon">&#128205;</span> Locations
-          </button>
-        </div>
-        <div class="globe-overlay-bottom">
-          <div class="globe-stats" id="globe-stats">
-            <span class="gstat"><strong id="gs-events">--</strong> Events Tracked</span>
-            <span class="gstat"><strong id="gs-sources">10</strong> News Sources</span>
-            <span class="gstat"><strong id="gs-risk">--</strong> Risk Level</span>
+      <!-- Map Section -->
+      <section class="map-section">
+        <div class="map-header">
+          <div class="map-header-left">
+            <span class="map-title">Cambodia Intelligence</span>
+            <span class="map-stats" id="map-stats">
+              <span><strong id="gs-events">--</strong> events</span>
+              <span><strong id="gs-sources">10</strong> sources</span>
+              <span><strong id="gs-risk">--</strong> risk</span>
+            </span>
           </div>
         </div>
-        <!-- Globe Legend -->
-        <div class="globe-legend">
-          <span class="gl-item"><span class="gl-line" style="background:rgba(59,130,246,0.9)"></span> Flight Routes</span>
-          <span class="gl-item"><span class="gl-line" style="background:rgba(16,185,129,0.9)"></span> Shipping Lanes</span>
-          <span class="gl-item"><span class="gl-line" style="background:#06b6d4"></span> Submarine Cables</span>
-          <span class="gl-item"><span class="gl-dot" style="background:#ef4444"></span> Capital</span>
-          <span class="gl-item"><span class="gl-dot" style="background:#3b82f6"></span> Airport</span>
-          <span class="gl-item"><span class="gl-dot" style="background:#10b981"></span> Port/SEZ</span>
-          <span class="gl-item"><span class="gl-dot" style="background:#8b5cf6"></span> Border</span>
-        </div>
-        <!-- Globe Zoom Controls -->
-        <div class="globe-zoom-controls" id="globe-zoom-controls">
-          <button class="globe-zoom-btn" id="globe-zoom-in" title="Zoom In">+</button>
-          <button class="globe-zoom-btn" id="globe-zoom-out" title="Zoom Out">&minus;</button>
-          <button class="globe-zoom-btn" id="globe-zoom-reset" title="Reset View">&#8634;</button>
-        </div>
-      </div>
+        <div class="map-container" id="map-area">
+          <!-- 3D Globe (default) -->
+          <div id="globe-container" style="width:100%;height:100%"></div>
+          <!-- 2D Map (hidden by default) -->
+          <div id="map" style="width:100%;height:100%;display:none"></div>
 
-      <!-- 2D Map (hidden by default) -->
-      <div class="map-wrapper" id="map-wrapper" style="display:none">
-        <div id="map" class="map-container"></div>
-        <div class="layer-panel" id="layer-panel">
-          <div class="layer-header">
-            <span>LAYERS</span>
-            <span class="layer-count" id="layer-count">5</span>
-            <button class="layer-collapse" id="layer-toggle">&#9660;</button>
-          </div>
-          <div class="layer-list" id="layer-list">
-            <label class="layer-item"><input type="checkbox" checked data-layer="cities"><span class="layer-dot" style="background:#ef4444"></span> Key Cities</label>
-            <label class="layer-item"><input type="checkbox" checked data-layer="provinces"><span class="layer-dot" style="background:#f59e0b"></span> Provinces</label>
-            <label class="layer-item"><input type="checkbox" checked data-layer="borders"><span class="layer-dot" style="background:#8b5cf6"></span> Border Crossings</label>
-            <label class="layer-item"><input type="checkbox" checked data-layer="economic"><span class="layer-dot" style="background:#10b981"></span> Economic Zones</label>
-            <label class="layer-item"><input type="checkbox" checked data-layer="infrastructure"><span class="layer-dot" style="background:#3b82f6"></span> Infrastructure</label>
-            <label class="layer-item"><input type="checkbox" data-layer="tourism"><span class="layer-dot" style="background:#ec4899"></span> Tourism Sites</label>
-            <label class="layer-item"><input type="checkbox" data-layer="waterways"><span class="layer-dot" style="background:#06b6d4"></span> Waterways</label>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- SECTION 2: AI News Intelligence + Daily Brief (side by side) -->
-    <section class="content-grid grid-2col">
-      <!-- AI News Feed -->
-      <div class="card-section" id="news-section">
-        <div class="card-header">
-          <div class="card-title">
-            <span class="ai-badge">AI</span>
-            <span>NEWS INTELLIGENCE</span>
-            <span class="item-count" id="news-total">0</span>
-          </div>
-          <button class="card-btn" id="news-refresh" title="Refresh">&#8635;</button>
-        </div>
-        <div class="news-tabs" id="news-tabs">
-          <button class="tab active" data-feed="all">ALL</button>
-          <button class="tab" data-feed="breaking">BREAKING</button>
-          <button class="tab" data-feed="politics">POLITICS</button>
-          <button class="tab" data-feed="economy">ECONOMY</button>
-          <button class="tab" data-feed="security">SECURITY</button>
-          <button class="tab" data-feed="trade">TRADE</button>
-        </div>
-        <div class="news-feed" id="news-feed">
-          <div class="loading-state"><div class="spinner"></div><span>AI analyzing feeds...</span></div>
-        </div>
-      </div>
-
-      <!-- Intelligence Brief -->
-      <div class="card-section" id="intel-section">
-        <div class="card-header">
-          <div class="card-title">
-            <span class="ai-badge">AI</span>
-            <span>INTELLIGENCE BRIEF</span>
-          </div>
-        </div>
-        <div class="card-body">
-          <div class="intel-sub-section">
-            <div class="intel-header">Daily Intelligence Brief</div>
-            <div class="intel-timestamp" id="intel-time">--</div>
-            <div class="intel-body" id="intel-brief">
-              <div class="loading-state"><div class="spinner"></div><span>Generating brief...</span></div>
+          <!-- Layer Toggles -->
+          <div class="layer-toggles" id="layer-toggles">
+            <div class="toggle-header">
+              <span>Layers</span>
+              <button class="toggle-collapse" id="toggle-collapse-btn">&#9660;</button>
+            </div>
+            <div class="toggle-list" id="toggle-list">
+              <!-- 3D Globe layers -->
+              <label class="layer-toggle" data-mode="3d" data-glayer="flights">
+                <input type="checkbox" checked>
+                <span class="toggle-icon">&#9992;</span>
+                <span class="toggle-label">Flights</span>
+                <span class="toggle-count" id="gs-flights">18</span>
+              </label>
+              <label class="layer-toggle" data-mode="3d" data-glayer="shipping">
+                <input type="checkbox" checked>
+                <span class="toggle-icon">&#128674;</span>
+                <span class="toggle-label">Shipping</span>
+                <span class="toggle-count" id="gs-shipping">8</span>
+              </label>
+              <label class="layer-toggle" data-mode="3d" data-glayer="cables">
+                <input type="checkbox" checked>
+                <span class="toggle-icon">&#128268;</span>
+                <span class="toggle-label">Cables</span>
+                <span class="toggle-count" id="gs-cables">4</span>
+              </label>
+              <label class="layer-toggle" data-mode="3d" data-glayer="locations">
+                <input type="checkbox" checked>
+                <span class="toggle-icon">&#128205;</span>
+                <span class="toggle-label">Locations</span>
+              </label>
+              <!-- 2D Map layers -->
+              <label class="layer-toggle" data-mode="2d" data-layer="cities" style="display:none">
+                <input type="checkbox" checked>
+                <span class="toggle-icon" style="color:#ff4444">&#9679;</span>
+                <span class="toggle-label">Cities</span>
+              </label>
+              <label class="layer-toggle" data-mode="2d" data-layer="provinces" style="display:none">
+                <input type="checkbox" checked>
+                <span class="toggle-icon" style="color:#ffaa00">&#9679;</span>
+                <span class="toggle-label">Provinces</span>
+              </label>
+              <label class="layer-toggle" data-mode="2d" data-layer="borders" style="display:none">
+                <input type="checkbox" checked>
+                <span class="toggle-icon" style="color:#a78bfa">&#9679;</span>
+                <span class="toggle-label">Borders</span>
+              </label>
+              <label class="layer-toggle" data-mode="2d" data-layer="economic" style="display:none">
+                <input type="checkbox" checked>
+                <span class="toggle-icon" style="color:#44ff88">&#9679;</span>
+                <span class="toggle-label">Economic</span>
+              </label>
+              <label class="layer-toggle" data-mode="2d" data-layer="infrastructure" style="display:none">
+                <input type="checkbox" checked>
+                <span class="toggle-icon" style="color:#3b82f6">&#9679;</span>
+                <span class="toggle-label">Infrastructure</span>
+              </label>
+              <label class="layer-toggle" data-mode="2d" data-layer="tourism" style="display:none">
+                <input type="checkbox">
+                <span class="toggle-icon" style="color:#ec4899">&#9679;</span>
+                <span class="toggle-label">Tourism</span>
+              </label>
+              <label class="layer-toggle" data-mode="2d" data-layer="waterways" style="display:none">
+                <input type="checkbox">
+                <span class="toggle-icon" style="color:#22d3ee">&#9679;</span>
+                <span class="toggle-label">Waterways</span>
+              </label>
             </div>
           </div>
-          <div class="intel-sub-section">
-            <div class="intel-header">Key Events</div>
-            <div class="event-list" id="event-list">
-              <div class="loading-state"><div class="spinner"></div><span>Analyzing events...</span></div>
-            </div>
-          </div>
-          <div class="intel-sub-section">
-            <div class="intel-header">Sentiment Analysis</div>
-            <div class="sentiment-bar" id="sentiment-bar">
-              <div class="sbar-fill sbar-pos" id="sbar-pos" style="width:33%"></div>
-              <div class="sbar-fill sbar-neu" id="sbar-neu" style="width:34%"></div>
-              <div class="sbar-fill sbar-neg" id="sbar-neg" style="width:33%"></div>
-            </div>
-            <div class="sentiment-labels">
-              <span class="slabel slabel-pos" id="slabel-pos">Positive 33%</span>
-              <span class="slabel slabel-neu" id="slabel-neu">Neutral 34%</span>
-              <span class="slabel slabel-neg" id="slabel-neg">Negative 33%</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
 
-    <!-- SECTION 2B: GDELT Global News Intelligence + CSX Stock Market -->
-    <section class="content-grid grid-2col">
-      <!-- GDELT Global News Intelligence -->
-      <div class="card-section" id="gdelt-section">
-        <div class="card-header">
-          <div class="card-title">
-            <span class="ai-badge">AI</span>
-            <span>GLOBAL NEWS INTELLIGENCE</span>
-            <span class="item-count" id="gdelt-total">0</span>
+          <!-- Map Controls (zoom) -->
+          <div class="map-controls" id="map-controls">
+            <button class="map-control-btn" id="map-zoom-in" title="Zoom In">+</button>
+            <button class="map-control-btn" id="map-zoom-out" title="Zoom Out">&minus;</button>
+            <button class="map-control-btn" id="map-zoom-reset" title="Reset View">&#8634;</button>
           </div>
-          <button class="card-btn" id="gdelt-refresh" title="Refresh GDELT">&#8635;</button>
-        </div>
-        <div class="card-body">
-          <div class="gdelt-info-panel">
-            <div class="gdelt-info-title">Real-time global news monitoring:</div>
-            <ul class="gdelt-info-list">
-              <li>Curated topic categories (conflicts, cyber, etc.)</li>
-              <li>Articles from 100+ languages translated</li>
-              <li>Updates every 15 minutes</li>
-              <li>14-day media tone &amp; volume trend per topic</li>
-            </ul>
-            <div class="gdelt-source">Source: GDELT Project (gdeltproject.org)</div>
-          </div>
-          <div class="intel-sub-section">
-            <div class="intel-header">Media Tone Trend (14 days)</div>
-            <div class="gdelt-tone-chart" id="gdelt-tone-chart">
-              <div class="loading-state"><div class="spinner"></div><span>Loading tone data...</span></div>
-            </div>
-          </div>
-          <div class="intel-sub-section">
-            <div class="intel-header">Global Articles about Cambodia</div>
-            <div class="gdelt-articles" id="gdelt-articles">
-              <div class="loading-state"><div class="spinner"></div><span>Fetching global coverage...</span></div>
-            </div>
-          </div>
-        </div>
-      </div>
 
-      <!-- Cambodia Stock Exchange (CSX) -->
-      <div class="card-section" id="csx-section">
-        <div class="card-header">
-          <div class="card-title">
-            <span class="ai-badge" style="background:rgba(16,185,129,0.15);color:#10b981">CSX</span>
-            <span>CAMBODIA STOCK EXCHANGE</span>
+          <!-- Map Legend -->
+          <div class="map-legend" id="map-legend">
+            <span class="legend-item"><span class="legend-line" style="background:rgba(59,130,246,0.9)"></span> Flights</span>
+            <span class="legend-item"><span class="legend-line" style="background:rgba(68,255,136,0.9)"></span> Shipping</span>
+            <span class="legend-item"><span class="legend-line" style="background:#22d3ee"></span> Cables</span>
+            <span class="legend-item"><span class="legend-dot" style="background:#ff4444"></span> Capital</span>
+            <span class="legend-item"><span class="legend-dot" style="background:#3b82f6"></span> Airport</span>
+            <span class="legend-item"><span class="legend-dot" style="background:#44ff88"></span> Port/SEZ</span>
+            <span class="legend-item"><span class="legend-dot" style="background:#a78bfa"></span> Border</span>
           </div>
-          <button class="card-btn" id="csx-refresh" title="Refresh">&#8635;</button>
         </div>
-        <div class="card-body">
-          <div class="csx-index-bar" id="csx-index">
-            <div class="loading-state"><div class="spinner"></div><span>Loading CSX index...</span></div>
-          </div>
-          <div class="intel-sub-section">
-            <div class="intel-header">Listed Securities</div>
-            <div class="csx-stock-list" id="csx-stocks">
-              <div class="loading-state"><div class="spinner"></div><span>Loading stock data...</span></div>
-            </div>
-          </div>
-          <div class="csx-disclaimer">Data for informational purposes. Source: CSX (csx.com.kh)</div>
-        </div>
-      </div>
-    </section>
+      </section>
 
-    <!-- SECTION 3: Strategic Risk + Forecast (side by side) -->
-    <section class="content-grid grid-2col">
-      <!-- Strategic Risk -->
-      <div class="card-section" id="risk-section">
-        <div class="card-header">
-          <div class="card-title">
-            <span class="ai-badge">AI</span>
-            <span>STRATEGIC RISK OVERVIEW</span>
-          </div>
-        </div>
-        <div class="card-body">
-          <div class="risk-header-block">
-            <div class="risk-overall">
-              <div class="risk-score-circle" id="risk-circle">
-                <span class="risk-score-value" id="risk-score">--</span>
-                <span class="risk-score-label">RISK</span>
+      <!-- Panels Scroll Area -->
+      <div class="panels-scroll">
+        <div class="panels-grid">
+
+          <!-- News Intelligence Panel -->
+          <div class="panel wide" id="news-section">
+            <div class="panel-header">
+              <div class="panel-header-left">
+                <span class="panel-badge badge-ai">AI</span>
+                <span class="panel-title">News Intelligence</span>
+                <span class="panel-count" id="news-total">0</span>
               </div>
-              <div class="risk-desc" id="risk-desc">Calculating...</div>
+              <button class="panel-btn" id="news-refresh" title="Refresh">&#8635;</button>
+            </div>
+            <div class="panel-tabs" id="news-tabs">
+              <button class="panel-tab active" data-feed="all">ALL</button>
+              <button class="panel-tab" data-feed="breaking">BREAKING</button>
+              <button class="panel-tab" data-feed="politics">POLITICS</button>
+              <button class="panel-tab" data-feed="economy">ECONOMY</button>
+              <button class="panel-tab" data-feed="security">SECURITY</button>
+              <button class="panel-tab" data-feed="trade">TRADE</button>
+            </div>
+            <div class="panel-content">
+              <div class="news-feed" id="news-feed">
+                <div class="loading-state"><div class="spinner"></div><span>AI analyzing feeds...</span></div>
+              </div>
             </div>
           </div>
-          <div class="intel-sub-section">
-            <div class="intel-header">Strategic Risk Indicators</div>
-            <div class="risk-grid" id="risk-grid">
-              <div class="loading-state"><div class="spinner"></div><span>Loading risk data...</span></div>
+
+          <!-- Intelligence Brief Panel -->
+          <div class="panel" id="intel-section">
+            <div class="panel-header">
+              <div class="panel-header-left">
+                <span class="panel-badge badge-ai">AI</span>
+                <span class="panel-title">Intelligence Brief</span>
+              </div>
+            </div>
+            <div class="panel-content">
+              <div class="intel-sub-section">
+                <div class="intel-header">Daily Intelligence Brief</div>
+                <div class="intel-timestamp" id="intel-time">--</div>
+                <div class="intel-body" id="intel-brief">
+                  <div class="loading-state"><div class="spinner"></div><span>Generating brief...</span></div>
+                </div>
+              </div>
+              <div class="intel-sub-section">
+                <div class="intel-header">Key Events</div>
+                <div class="event-list" id="event-list">
+                  <div class="loading-state"><div class="spinner"></div><span>Analyzing events...</span></div>
+                </div>
+              </div>
+              <div class="intel-sub-section">
+                <div class="intel-header">Sentiment Analysis</div>
+                <div class="sentiment-bar" id="sentiment-bar">
+                  <div class="sbar-fill sbar-pos" id="sbar-pos" style="width:33%"></div>
+                  <div class="sbar-fill sbar-neu" id="sbar-neu" style="width:34%"></div>
+                  <div class="sbar-fill sbar-neg" id="sbar-neg" style="width:33%"></div>
+                </div>
+                <div class="sentiment-labels">
+                  <span class="slabel slabel-pos" id="slabel-pos">Positive 33%</span>
+                  <span class="slabel slabel-neu" id="slabel-neu">Neutral 34%</span>
+                  <span class="slabel slabel-neg" id="slabel-neg">Negative 33%</span>
+                </div>
+              </div>
             </div>
           </div>
-          <div class="intel-sub-section">
-            <div class="intel-header">Regional Comparison (ASEAN)</div>
-            <div class="risk-compare" id="risk-compare">
-              <div class="loading-state"><div class="spinner"></div><span>Loading...</span></div>
+
+          <!-- GDELT Global News Intelligence Panel -->
+          <div class="panel wide" id="gdelt-section">
+            <div class="panel-header">
+              <div class="panel-header-left">
+                <span class="panel-badge badge-ai">AI</span>
+                <span class="panel-title">Global News Intelligence</span>
+                <span class="panel-count" id="gdelt-total">0</span>
+              </div>
+              <button class="panel-btn" id="gdelt-refresh" title="Refresh GDELT">&#8635;</button>
+            </div>
+            <div class="panel-content">
+              <div class="gdelt-info-panel">
+                <div class="gdelt-info-title">Real-time global news monitoring:</div>
+                <ul class="gdelt-info-list">
+                  <li>Curated topic categories (conflicts, cyber, etc.)</li>
+                  <li>Articles from 100+ languages translated</li>
+                  <li>Updates every 15 minutes</li>
+                  <li>14-day media tone &amp; volume trend per topic</li>
+                </ul>
+                <div class="gdelt-source">Source: GDELT Project (gdeltproject.org)</div>
+              </div>
+              <div class="intel-sub-section">
+                <div class="intel-header">Media Tone Trend (14 days)</div>
+                <div class="gdelt-tone-chart" id="gdelt-tone-chart">
+                  <div class="loading-state"><div class="spinner"></div><span>Loading tone data...</span></div>
+                </div>
+              </div>
+              <div class="intel-sub-section">
+                <div class="intel-header">Global Articles about Cambodia</div>
+                <div class="gdelt-articles" id="gdelt-articles">
+                  <div class="loading-state"><div class="spinner"></div><span>Fetching global coverage...</span></div>
+                </div>
+              </div>
             </div>
           </div>
-        </div>
-      </div>
 
-      <!-- AI Forecast -->
-      <div class="card-section" id="forecast-section">
-        <div class="card-header">
-          <div class="card-title">
-            <span class="ai-badge">AI</span>
-            <span>ECONOMIC FORECAST</span>
-          </div>
-        </div>
-        <div class="card-body">
-          <div class="intel-sub-section">
-            <div class="intel-header">AI Economic Forecast</div>
-            <div class="forecast-grid" id="forecast-grid">
-              <div class="loading-state"><div class="spinner"></div><span>Computing forecasts...</span></div>
+          <!-- Cambodia Stock Exchange Panel -->
+          <div class="panel" id="csx-section">
+            <div class="panel-header">
+              <div class="panel-header-left">
+                <span class="panel-badge badge-csx">CSX</span>
+                <span class="panel-title">Cambodia Stock Exchange</span>
+              </div>
+              <button class="panel-btn" id="csx-refresh" title="Refresh">&#8635;</button>
+            </div>
+            <div class="panel-content">
+              <div class="csx-index-bar" id="csx-index">
+                <div class="loading-state"><div class="spinner"></div><span>Loading CSX index...</span></div>
+              </div>
+              <div class="intel-sub-section">
+                <div class="intel-header">Listed Securities</div>
+                <div class="csx-stock-list" id="csx-stocks">
+                  <div class="loading-state"><div class="spinner"></div><span>Loading stock data...</span></div>
+                </div>
+              </div>
+              <div class="csx-disclaimer">Data for informational purposes. Source: CSX (csx.com.kh)</div>
             </div>
           </div>
-          <div class="intel-sub-section">
-            <div class="intel-header">Political Outlook</div>
-            <div class="outlook-body" id="political-outlook">
-              <div class="loading-state"><div class="spinner"></div><span>Analyzing...</span></div>
+
+          <!-- Strategic Risk Panel -->
+          <div class="panel" id="risk-section">
+            <div class="panel-header">
+              <div class="panel-header-left">
+                <span class="panel-severity-dot severity-medium"></span>
+                <span class="panel-badge badge-ai">AI</span>
+                <span class="panel-title">Strategic Risk</span>
+              </div>
+            </div>
+            <div class="panel-content">
+              <div class="risk-header-block">
+                <div class="risk-overall">
+                  <div class="risk-score-circle" id="risk-circle">
+                    <span class="risk-score-value" id="risk-score">--</span>
+                    <span class="risk-score-label">RISK</span>
+                  </div>
+                  <div class="risk-desc" id="risk-desc">Calculating...</div>
+                </div>
+              </div>
+              <div class="intel-sub-section">
+                <div class="intel-header">Strategic Risk Indicators</div>
+                <div class="risk-grid" id="risk-grid">
+                  <div class="loading-state"><div class="spinner"></div><span>Loading risk data...</span></div>
+                </div>
+              </div>
+              <div class="intel-sub-section">
+                <div class="intel-header">Regional Comparison (ASEAN)</div>
+                <div class="risk-compare" id="risk-compare">
+                  <div class="loading-state"><div class="spinner"></div><span>Loading...</span></div>
+                </div>
+              </div>
             </div>
           </div>
-        </div>
-      </div>
-    </section>
 
-    <!-- SECTION 4: Data (Weather, Economic, Country Stats, Sectors) -->
-    <section class="content-grid grid-3col">
-      <!-- Weather + Economic Indicators -->
-      <div class="card-section">
-        <div class="card-header">
-          <div class="card-title"><span>WEATHER &amp; ENVIRONMENT</span></div>
-        </div>
-        <div class="card-body">
-          <div class="weather-compact" id="weather-grid">
-            <div class="loading-state"><div class="spinner"></div><span>Loading...</span></div>
+          <!-- Economic Forecast Panel -->
+          <div class="panel" id="forecast-section">
+            <div class="panel-header">
+              <div class="panel-header-left">
+                <span class="panel-badge badge-ai">AI</span>
+                <span class="panel-title">Economic Forecast</span>
+              </div>
+            </div>
+            <div class="panel-content">
+              <div class="intel-sub-section">
+                <div class="intel-header">AI Economic Forecast</div>
+                <div class="forecast-grid" id="forecast-grid">
+                  <div class="loading-state"><div class="spinner"></div><span>Computing forecasts...</span></div>
+                </div>
+              </div>
+              <div class="intel-sub-section">
+                <div class="intel-header">Political Outlook</div>
+                <div class="outlook-body" id="political-outlook">
+                  <div class="loading-state"><div class="spinner"></div><span>Analyzing...</span></div>
+                </div>
+              </div>
+            </div>
           </div>
-        </div>
-      </div>
 
-      <div class="card-section">
-        <div class="card-header">
-          <div class="card-title"><span>ECONOMIC INDICATORS</span> <span class="data-source">World Bank</span></div>
-        </div>
-        <div class="card-body">
-          <div class="eco-grid" id="eco-indicators">
-            <div class="loading-state"><div class="spinner"></div><span>Loading...</span></div>
+          <!-- Weather Panel -->
+          <div class="panel">
+            <div class="panel-header">
+              <div class="panel-header-left">
+                <span class="panel-title">Weather &amp; Environment</span>
+              </div>
+              <span class="panel-badge badge-live">LIVE</span>
+            </div>
+            <div class="panel-content">
+              <div class="weather-compact" id="weather-grid">
+                <div class="loading-state"><div class="spinner"></div><span>Loading...</span></div>
+              </div>
+            </div>
           </div>
-        </div>
-      </div>
 
-      <div class="card-section">
-        <div class="card-header">
-          <div class="card-title"><span>COUNTRY STATISTICS</span> <span class="data-source">World Bank</span></div>
-        </div>
-        <div class="card-body">
-          <div class="cstat-grid" id="country-stats">
-            <div class="loading-state"><div class="spinner"></div><span>Loading...</span></div>
+          <!-- Economic Indicators Panel -->
+          <div class="panel">
+            <div class="panel-header">
+              <div class="panel-header-left">
+                <span class="panel-title">Economic Indicators</span>
+                <span class="data-source">World Bank</span>
+              </div>
+            </div>
+            <div class="panel-content">
+              <div class="eco-grid" id="eco-indicators">
+                <div class="loading-state"><div class="spinner"></div><span>Loading...</span></div>
+              </div>
+            </div>
           </div>
-        </div>
-      </div>
-    </section>
 
-    <!-- SECTION 5: Key Info + Sectors + Borders -->
-    <section class="content-grid grid-3col">
-      <div class="card-section">
-        <div class="card-header">
-          <div class="card-title"><span>KEY INFO</span></div>
-        </div>
-        <div class="card-body">
-          <div class="stat-grid">
-            <div class="stat-card"><div class="stat-label">Capital</div><div class="stat-value">Phnom Penh</div></div>
-            <div class="stat-card"><div class="stat-label">Prime Minister</div><div class="stat-value">Hun Manet</div></div>
-            <div class="stat-card"><div class="stat-label">Population</div><div class="stat-value">17.2M</div></div>
-            <div class="stat-card"><div class="stat-label">Currency</div><div class="stat-value">KHR / USD</div></div>
+          <!-- Country Statistics Panel -->
+          <div class="panel">
+            <div class="panel-header">
+              <div class="panel-header-left">
+                <span class="panel-title">Country Statistics</span>
+                <span class="data-source">World Bank</span>
+              </div>
+            </div>
+            <div class="panel-content">
+              <div class="cstat-grid" id="country-stats">
+                <div class="loading-state"><div class="spinner"></div><span>Loading...</span></div>
+              </div>
+            </div>
           </div>
-        </div>
-      </div>
 
-      <div class="card-section">
-        <div class="card-header">
-          <div class="card-title"><span>KEY SECTORS MONITOR</span></div>
-        </div>
-        <div class="card-body">
-          <div class="sector-list">
-            <div class="sector-row"><span class="sector-icon">&#127981;</span><span class="sector-name">Tourism</span><span class="sector-status status-good">Active</span></div>
-            <div class="sector-row"><span class="sector-icon">&#127983;</span><span class="sector-name">Construction</span><span class="sector-status status-good">Growing</span></div>
-            <div class="sector-row"><span class="sector-icon">&#128188;</span><span class="sector-name">Garment Export</span><span class="sector-status status-good">Stable</span></div>
-            <div class="sector-row"><span class="sector-icon">&#127806;</span><span class="sector-name">Agriculture</span><span class="sector-status status-warn">Seasonal</span></div>
-            <div class="sector-row"><span class="sector-icon">&#128640;</span><span class="sector-name">Tech &amp; Digital</span><span class="sector-status status-good">Expanding</span></div>
-            <div class="sector-row"><span class="sector-icon">&#127968;</span><span class="sector-name">Real Estate</span><span class="sector-status status-warn">Cooling</span></div>
-            <div class="sector-row"><span class="sector-icon">&#9981;</span><span class="sector-name">Mining &amp; Energy</span><span class="sector-status status-good">Developing</span></div>
-            <div class="sector-row"><span class="sector-icon">&#128176;</span><span class="sector-name">Banking &amp; Finance</span><span class="sector-status status-good">Stable</span></div>
+          <!-- Key Info Panel -->
+          <div class="panel">
+            <div class="panel-header">
+              <div class="panel-header-left">
+                <span class="panel-title">Key Info</span>
+              </div>
+            </div>
+            <div class="panel-content">
+              <div class="stat-grid">
+                <div class="stat-card"><div class="stat-label">Capital</div><div class="stat-value">Phnom Penh</div></div>
+                <div class="stat-card"><div class="stat-label">Prime Minister</div><div class="stat-value">Hun Manet</div></div>
+                <div class="stat-card"><div class="stat-label">Population</div><div class="stat-value">17.2M</div></div>
+                <div class="stat-card"><div class="stat-label">Currency</div><div class="stat-value">KHR / USD</div></div>
+              </div>
+            </div>
           </div>
-        </div>
-      </div>
 
-      <div class="card-section">
-        <div class="card-header">
-          <div class="card-title"><span>BORDER STATUS</span></div>
-        </div>
-        <div class="card-body">
-          <div class="border-list">
-            <div class="border-row"><span class="border-flag">&#127481;&#127469;</span><span class="border-name">Cambodia-Thailand</span><span class="border-status status-good">Open</span></div>
-            <div class="border-row"><span class="border-flag">&#127483;&#127475;</span><span class="border-name">Cambodia-Vietnam</span><span class="border-status status-good">Open</span></div>
-            <div class="border-row"><span class="border-flag">&#127473;&#127462;</span><span class="border-name">Cambodia-Laos</span><span class="border-status status-good">Open</span></div>
+          <!-- Key Sectors Panel -->
+          <div class="panel">
+            <div class="panel-header">
+              <div class="panel-header-left">
+                <span class="panel-title">Key Sectors</span>
+              </div>
+            </div>
+            <div class="panel-content">
+              <div class="sector-list">
+                <div class="sector-row"><span class="sector-icon">&#127981;</span><span class="sector-name">Tourism</span><span class="sector-status status-good">Active</span></div>
+                <div class="sector-row"><span class="sector-icon">&#127983;</span><span class="sector-name">Construction</span><span class="sector-status status-good">Growing</span></div>
+                <div class="sector-row"><span class="sector-icon">&#128188;</span><span class="sector-name">Garment Export</span><span class="sector-status status-good">Stable</span></div>
+                <div class="sector-row"><span class="sector-icon">&#127806;</span><span class="sector-name">Agriculture</span><span class="sector-status status-warn">Seasonal</span></div>
+                <div class="sector-row"><span class="sector-icon">&#128640;</span><span class="sector-name">Tech &amp; Digital</span><span class="sector-status status-good">Expanding</span></div>
+                <div class="sector-row"><span class="sector-icon">&#127968;</span><span class="sector-name">Real Estate</span><span class="sector-status status-warn">Cooling</span></div>
+                <div class="sector-row"><span class="sector-icon">&#9981;</span><span class="sector-name">Mining &amp; Energy</span><span class="sector-status status-good">Developing</span></div>
+                <div class="sector-row"><span class="sector-icon">&#128176;</span><span class="sector-name">Banking &amp; Finance</span><span class="sector-status status-good">Stable</span></div>
+              </div>
+            </div>
           </div>
+
+          <!-- Border Status Panel -->
+          <div class="panel">
+            <div class="panel-header">
+              <div class="panel-header-left">
+                <span class="panel-title">Border Status</span>
+              </div>
+              <span class="panel-badge badge-live">LIVE</span>
+            </div>
+            <div class="panel-content">
+              <div class="border-list">
+                <div class="border-row"><span class="border-flag">&#127481;&#127469;</span><span class="border-name">Cambodia-Thailand</span><span class="border-status status-good">Open</span></div>
+                <div class="border-row"><span class="border-flag">&#127483;&#127475;</span><span class="border-name">Cambodia-Vietnam</span><span class="border-status status-good">Open</span></div>
+                <div class="border-row"><span class="border-flag">&#127473;&#127462;</span><span class="border-name">Cambodia-Laos</span><span class="border-status status-good">Open</span></div>
+              </div>
+            </div>
+          </div>
+
         </div>
       </div>
-    </section>
 
-  </main>
-
-  <!-- Footer -->
-  <footer class="footer-bar">
-    <div class="footer-left">
-      <span class="footer-brand">CAMBODIA MONITOR</span>
-      <span class="footer-version">v3.2 AI</span>
     </div>
-    <div class="footer-links">
-      <a href="https://github.com/keovoin/MonitorKH" target="_blank">GitHub</a>
-      <a href="#" id="about-link">About</a>
-    </div>
-    <div class="footer-right">&copy; 2026 Cambodia Monitor</div>
-  </footer>
+
+    <!-- Footer -->
+    <footer class="site-footer">
+      <div>
+        <span class="footer-brand">CAMBODIA MONITOR</span>
+        <span class="footer-sub"> &middot; Intelligence Dashboard</span>
+      </div>
+      <nav>
+        <a href="https://github.com/keovoin/MonitorKH" target="_blank">GitHub</a>
+        <a href="#" id="about-link">About</a>
+      </nav>
+      <span class="footer-copy">&copy; 2026 Cambodia Monitor</span>
+    </footer>
+
+  </div>
 
   <!-- About Modal -->
   <div class="modal-overlay" id="about-modal">
     <div class="modal">
       <div class="modal-header">
-        <h3>About Cambodia Monitor v3.2</h3>
+        <h3>About Cambodia Monitor v4.0</h3>
         <button class="modal-close" id="modal-close">&times;</button>
       </div>
       <div class="modal-body">
-        <p>Cambodia Monitor v3.2 is an AI-powered intelligence dashboard focused on Cambodia.</p>
+        <p>Cambodia Monitor v4.0 is a real-time intelligence platform focused on Cambodia, inspired by WorldMonitor.</p>
         <br>
-        <p><strong>3D Globe:</strong> Interactive globe showing flight routes, shipping lanes, submarine internet cables, and key infrastructure pins for Cambodia.</p>
-        <p><strong>AI Features:</strong> Sentiment analysis, auto-categorization, intelligence briefings, economic forecasting, strategic risk scoring</p>
-        <p><strong>News Sources:</strong> Khmer Times, PP Post, VOA, Cambodianess, Reuters, Al Jazeera, BBC, AP, Nikkei Asia + GDELT Global</p>
-        <p><strong>GDELT Intelligence:</strong> Real-time global news monitoring from 100+ languages, media tone trends, curated topic tracking</p>
-        <p><strong>Cambodia Stock Exchange:</strong> CSX index and listed securities with daily price tracking</p>
-        <p><strong>Economic Data:</strong> World Bank API (GDP, inflation, FDI, governance indicators)</p>
-        <p><strong>Weather:</strong> Open-Meteo API (4 cities, real-time)</p>
-        <p><strong>Exchange Rates:</strong> 8 currency pairs updated hourly</p>
+        <p><strong>Map:</strong> Interactive 3D globe and 2D flat map with flight routes, shipping lanes, submarine cables, and infrastructure pins.</p>
+        <p><strong>AI Features:</strong> Sentiment analysis, categorization, intelligence briefings, economic forecasting, strategic risk scoring.</p>
+        <p><strong>News Sources:</strong> Khmer Times, PP Post, VOA, Cambodianess, Reuters, Al Jazeera, BBC, AP, Nikkei Asia + GDELT Global.</p>
+        <p><strong>GDELT Intelligence:</strong> Real-time global news monitoring from 100+ languages with media tone trends.</p>
+        <p><strong>Cambodia Stock Exchange:</strong> CSX index and listed securities with daily price tracking.</p>
+        <p><strong>Economic Data:</strong> World Bank API (GDP, inflation, FDI, governance indicators).</p>
+        <p><strong>Weather:</strong> Open-Meteo API (4 cities, real-time).</p>
+        <p><strong>Exchange Rates:</strong> 8 currency pairs updated hourly.</p>
         <br>
         <p>All APIs are free and require no keys.</p>
       </div>
@@ -450,6 +502,7 @@
   <script src="https://unpkg.com/three@0.160.0/build/three.min.js"></script>
   <script src="https://unpkg.com/globe.gl@2.27.2/dist/globe.gl.min.js"></script>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
