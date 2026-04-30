@@ -1343,6 +1343,7 @@ canvas, .maplibregl-map, .maplibregl-canvas {
   border-radius: 1px 1px 0 0;
   transition: height 0.3s;
   cursor: default;
+  position: relative;
 }
 
 .tone-bar.positive { background: var(--green); }
