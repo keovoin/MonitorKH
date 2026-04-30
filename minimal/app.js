@@ -592,10 +592,10 @@
   }
 
   function createPopupContent(loc) {
-    var html = '<div style="font-family:SF Mono,Monaco,Cascadia Code,monospace;min-width:140px;color:#e8e8e8">';
+    var html = '<div style="font-family:SF Mono,Monaco,Cascadia Code,monospace;min-width:140px">';
     html += '<div style="font-weight:700;font-size:12px;margin-bottom:4px">' + loc.name + '</div>';
-    if (loc.desc) html += '<div style="font-size:10px;color:#888;margin-bottom:2px">' + loc.desc + '</div>';
-    if (loc.pop) html += '<div style="font-size:10px;color:#666">Pop: ' + loc.pop + '</div>';
+    if (loc.desc) html += '<div style="font-size:10px;opacity:0.7;margin-bottom:2px">' + loc.desc + '</div>';
+    if (loc.pop) html += '<div style="font-size:10px;opacity:0.5">Pop: ' + loc.pop + '</div>';
     html += '</div>';
     return html;
   }
